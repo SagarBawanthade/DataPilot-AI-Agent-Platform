@@ -1,0 +1,101 @@
+customer_id,customer_name,customer_email,customer_city,customer_country,created_at
+1,Price-Smith,christophersmith@neal.net,Port John,Swaziland,2020-08-04 20:16:43.673162
+2,Petersen-Young,rknight@moore.info,Michellefort,Saint Barthelemy,2021-12-26 21:04:15.764453
+3,Spencer-Williams,lvalenzuela@thompson.org,North Angelaburgh,Peru,2026-07-31 05:01:55.789438
+4,"Thompson, Freeman and Taylor",smithchelsea@paul.com,Jacquelineville,Iceland,2023-07-01 07:00:45.800598
+5,Sparks-Shaw,chapmantimothy@wade-peterson.net,East Mariahfurt,Guinea,2021-06-04 06:41:20.972661
+6,"Matthews, Sullivan and Fields",bleonard@smith.org,Johnsonville,Jordan,2023-03-02 16:16:10.094815
+7,"Mckee, Greene and Cochran",tammy65@warren.com,Port Ryanview,Uganda,2022-02-12 01:09:33.341065
+8,Mcintyre-Walter,donna49@stewart.com,Perezville,Korea,2023-11-23 16:04:04.726079
+9,Johnson LLC,jeffrey79@cunningham.org,Skinnerchester,Hong Kong,2022-07-30 23:29:17.001698
+10,"Perez, Rose and Harrison",ballardricardo@peterson-miller.com,West Markberg,Israel,2023-09-22 21:56:43.270477
+11,Cantu-Oconnor,greg23@woods.com,Lake Melissa,Bosnia and Herzegovina,2025-09-01 16:08:19.149841
+12,"White, Wagner and Lopez",princetonya@hernandez.com,Melissamouth,Rwanda,2021-04-30 19:23:41.853680
+13,Fernandez Inc,willie84@burns-ross.com,Mccoyton,Sierra Leone,2024-02-14 15:38:27.122076
+14,Stephenson-Jenkins,johnsondonald@wilkerson.com,Port Jessica,Colombia,2022-12-24 14:27:55.722695
+15,Welch-Hill,qpatterson@olson.info,Rachelmouth,American Samoa,2026-05-15 07:24:29.085541
+16,Bonilla and Sons,stacey14@martin.com,Port Abigail,Niue,2020-01-02 03:03:32.798151
+17,Robinson-Trevino,freyrobert@scott.com,Starkmouth,Somalia,2020-12-27 00:54:57.476304
+18,Medina-Cunningham,patrickkramer@walker.com,Amytown,Papua New Guinea,2021-08-20 05:28:08.479593
+19,Warren Ltd,joshua70@sanchez-lawrence.com,East Oliviamouth,Mozambique,2020-12-24 05:57:30.739780
+20,Hoffman and Sons,joyreyes@smith.com,New Douglasport,Myanmar,2022-03-14 20:10:09.910558
+21,Mendez-Reilly,rileycatherine@cox-morgan.com,Colleenland,Montenegro,2026-08-28 10:17:22.584228
+22,Farmer-Webb,mathewashley@valencia.info,Port Amberside,New Zealand,2022-01-03 12:39:04.791093
+23,Fernandez PLC,robertsbrandon@stewart.org,New Jessica,Switzerland,2024-12-04 21:38:30.681904
+24,"Coleman, Fields and Welch",thomas12@schmidt.net,Christopherberg,Brunei Darussalam,2024-05-07 06:01:06.814520
+25,Davis-Lowe,kimberly53@mcdaniel.com,North Davidville,New Caledonia,2024-10-29 00:13:23.257501
+26,Lee-Villarreal,swilliams@ellis.com,Erikamouth,Congo,2020-01-17 09:29:39.154169
+27,White-Morton,marioochoa@evans-holmes.org,East Johnstad,Philippines,2020-05-03 01:06:49.233559
+28,"Best, Glass and Camacho",thompsontyler@deleon.com,East Brettburgh,British Indian Ocean Territory (Chagos Archipelago),2020-01-10 23:27:33.324036
+29,Beck-Brown,starkmonique@robinson.com,Johnsonchester,Turkey,2025-01-01 20:35:08.306744
+30,Martinez-Clarke,alexmiller@stevenson.org,North Aimee,Comoros,2022-10-05 16:31:54.224228
+31,Reeves-Hunt,perryadam@sherman.net,Smithside,Mayotte,2026-09-14 22:26:01.206523
+32,"Riley, Sanders and Castillo",xhoffman@yates-saunders.net,East Kristenport,Senegal,2024-11-24 13:37:50.211774
+33,Ruiz Group,shawnwood@crawford.com,South Jesse,Central African Republic,2025-05-13 06:13:03.991307
+34,Marquez Ltd,ihall@melton.biz,West Douglas,Lao People's Democratic Republic,2021-05-06 10:21:55.846432
+35,Martinez-Adams,coxcheryl@holmes.biz,South Juliabury,Mozambique,2020-03-30 12:38:47.653472
+36,"Price, Vasquez and Hunt",adriana05@lee.com,Davisfurt,Egypt,2020-09-18 09:00:14.676288
+37,Williams PLC,nsmith@hurst.biz,Martinezport,Jersey,2024-08-27 11:04:03.892728
+38,Taylor-Mendoza,denise33@barnes.biz,Edwardston,Pakistan,2024-07-27 15:08:26.297084
+39,"Mullen, Wright and Sellers",megan18@cisneros.biz,Port Crystal,United Kingdom,2024-02-24 23:39:37.631922
+40,Miller PLC,kristinbrown@baker.com,East Laura,New Zealand,2023-12-13 14:46:33.091465
+41,Walker PLC,matthew66@davis-shields.com,South Deniseberg,Djibouti,2021-05-28 04:10:36.388786
+42,"Bailey, Pearson and Morton",brettmurray@beasley.com,Bradleymouth,Yemen,2020-12-14 20:14:09.136795
+43,"Jackson, May and Luna",vickie56@young-hickman.com,Port Aaronview,Saint Pierre and Miquelon,2021-06-05 10:15:54.213670
+44,"Sanchez, Johnson and Gonzalez",hannanichole@scott.com,Lake Michael,Bosnia and Herzegovina,2021-12-09 05:03:09.921975
+45,"Edwards, Ramirez and Jones",sarahsmith@dunlap-landry.com,Jessicastad,Mali,2026-05-10 04:31:10.384758
+46,"Tran, Zimmerman and Dawson",taylorbeth@jones-brooks.info,Port Nicoleport,Turks and Caicos Islands,2026-07-01 05:33:14.790771
+47,Reilly Group,pgarcia@hester-bowers.com,Petersonberg,Iran,2020-09-18 19:08:20.241292
+48,Hodges-Nunez,rowejames@crosby.com,North Davidbury,Norfolk Island,2025-01-21 01:50:07.232153
+49,"Rivera, Phillips and Mills",ramosjoel@young.com,Barnettbury,Azerbaijan,2021-02-12 15:59:07.412099
+50,Henderson Inc,nicolemarshall@fuller-hughes.com,Lanefurt,Mauritius,2021-10-28 16:01:46.252065
+51,Whitney-Dunn,robin00@conrad.com,Dunnton,France,2021-08-04 19:16:15.769989
+52,"Green, Hooper and Johnson",summerlopez@crane.com,South Markmouth,Aruba,2025-06-02 12:21:23.368558
+53,Fletcher-Howard,bhayes@blair.biz,Kelseyshire,British Virgin Islands,2023-03-29 08:23:34.112288
+54,Schroeder Ltd,sharon95@hartman-thornton.com,Riosside,Iran,2022-10-16 01:54:44.685920
+55,"Russell, Martin and Preston",leslie18@dougherty-levy.com,East Shannonborough,Isle of Man,2023-12-30 20:14:18.594054
+56,Jones-Garcia,hgarcia@walker.org,Alanberg,Faroe Islands,2020-11-17 10:18:44.041226
+57,Carter-Serrano,fraziernicholas@powell.biz,South Hannahland,Marshall Islands,2021-10-20 01:33:46.075551
+58,"Martin, Washington and Wise",jacobscott@webb-tucker.com,Port Anthonyfurt,Guyana,2020-04-23 04:52:09.495131
+59,Gonzalez-Foster,samantha50@fritz.info,East Johnville,Guam,2022-07-06 14:39:48.026361
+60,Bauer-Carlson,michellemason@schmidt-green.biz,Tracychester,Poland,2022-07-20 08:27:47.759131
+61,Taylor-Schmidt,kwilliams@clark.net,Reevesland,Bolivia,2025-08-06 23:47:55.976834
+62,Smith-Garza,lewisdiane@jones.net,Sierrabury,Finland,2021-04-27 20:51:45.235090
+63,"Ramsey, Mann and Johnson",tmaldonado@lawson.com,Lake Christopherhaven,Korea,2024-03-04 06:13:35.103283
+64,Mejia Group,wcarrillo@woods-lewis.biz,Oliviabury,Colombia,2020-07-02 20:26:15.898681
+65,Rose-Wallace,melissaanderson@johnson-shepherd.com,West Joseland,Dominican Republic,2025-07-12 20:27:09.200051
+66,"Coleman, Parks and Franklin",tyler95@woods.com,West Rachel,Mayotte,2024-06-27 12:51:12.090719
+67,Kelly-Mullen,mariaramos@thomas.net,Port Jenniferfort,Iraq,2024-11-29 03:30:39.399562
+68,Singleton and Sons,annathompson@maddox.com,New Reginaburgh,Northern Mariana Islands,2023-05-22 00:22:07.460986
+69,"Jarvis, Young and Boone",jacobmartinez@bryant.com,Monicafort,Denmark,2024-08-03 14:22:18.143162
+70,Sanders and Sons,joel53@hurley.com,North Alisha,Israel,2021-11-22 08:47:55.841648
+71,Day Ltd,conradsusan@costa.org,South Lauren,United States Minor Outlying Islands,2022-04-14 10:30:59.106360
+72,Stone-Reese,cmiles@gordon-walker.com,Darrylbury,Saint Pierre and Miquelon,2020-07-21 12:46:23.451329
+73,Alvarado-Estes,bbrooks@smith.com,Davisfort,Turkmenistan,2022-10-07 00:26:21.508608
+74,Martinez and Sons,troyarias@nelson.org,Collinsstad,Congo,2025-12-05 04:20:07.261133
+75,Humphrey LLC,katiejackson@barnes-long.com,North Anthony,Samoa,2020-11-27 13:57:41.211588
+76,Edwards Ltd,bradley57@wade.biz,Port Davidmouth,Turks and Caicos Islands,2026-08-13 03:12:43.502705
+77,Buck-Hunter,wkeller@levine.info,South Brandy,Luxembourg,2024-02-24 03:43:16.374998
+78,"Freeman, Raymond and Rodriguez",sanchezlindsey@villarreal.com,Lake Katrina,El Salvador,2020-09-14 04:17:37.395291
+79,Buchanan-Dunlap,cassidy71@khan-floyd.com,Cherylborough,Mauritius,2026-04-04 18:56:57.833880
+80,Flowers PLC,luiscooper@joseph.com,South Michelleshire,Chile,2025-07-28 00:48:41.633753
+81,Romero-Glover,spearscarl@klein.com,Morganborough,France,2025-03-16 15:28:25.309592
+82,Dougherty Inc,davidgarrison@stanley-young.com,Joshuatown,Jordan,2022-04-05 04:57:43.890925
+83,Mcdowell-Cook,tinasuarez@ramos.com,Lake Travischester,Central African Republic,2023-04-19 07:31:45.650271
+84,Walker-Barton,patrick34@turner-branch.com,New Scottside,United States Minor Outlying Islands,2023-10-10 22:37:00.637952
+85,"Howard, Anderson and Schneider",harrisfrancisco@heath.com,Phillipsside,Hungary,2023-08-03 23:23:49.899182
+86,Russell Inc,tmiller@griffin.com,Williamhaven,Saint Vincent and the Grenadines,2024-10-04 18:52:25.425979
+87,"Williams, Davis and Williams",ericayoung@moss.info,Brownville,Sudan,2021-08-02 02:43:31.338653
+88,Smith Inc,briangonzalez@knox.com,Courtneyton,Central African Republic,2021-10-22 02:09:40.876770
+89,Townsend-Smith,barbara15@thompson.biz,Torrestown,Ukraine,2022-03-07 13:31:14.517744
+90,Acevedo Ltd,diazmichael@moore.com,Johnstonborough,Eritrea,2025-04-10 10:58:26.981704
+91,Baldwin Group,laurenmatthews@simmons.info,Susanville,Kuwait,2025-06-24 15:12:10.724097
+92,Hill and Sons,choikatie@arellano.biz,East Maryfurt,Bhutan,2020-06-12 04:01:54.398460
+93,Patrick-Mccormick,josehill@adams.com,New Steven,Andorra,2023-08-12 23:25:32.488098
+94,Henderson-Cobb,tammylewis@haynes-garcia.com,Smithland,Cape Verde,2025-01-06 03:55:42.116304
+95,"Obrien, Thompson and Christensen",darrenchen@miller.com,Rhodesmouth,Sri Lanka,2025-06-02 03:40:47.237437
+96,Williams-Vazquez,chavezjason@green-aguilar.com,New Margaret,Cuba,2023-01-19 14:33:14.423810
+97,"Gibson, Allison and Farmer",ynash@sloan.com,Scottmouth,Kenya,2023-09-17 15:57:39.337192
+98,Gross Ltd,ngregory@sullivan-gonzalez.com,Scotttown,Grenada,2024-03-22 23:28:41.344343
+99,Mcneil-Dudley,jessicaknight@morgan.com,South Darleneburgh,Bolivia,2024-08-31 04:15:54.379595
+100,Sawyer and Sons,gilbertteresa@clements.com,East Benjaminview,Italy,2025-03-22 10:03:26.905087
