@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from analytics.ai.copilot import answer_question
 
 from analytics.services.snowflake_client import (
     get_top_customers,
@@ -27,3 +28,13 @@ def inventory_health(request):
 @api_view(["GET"])
 def overdue_invoices(request):
     return Response(get_overdue_invoices())
+
+
+@api_view(["POST"])
+def copilot(request):
+
+    question = request.data.get("question")
+
+    result = answer_question(question)
+
+    return Response(result)

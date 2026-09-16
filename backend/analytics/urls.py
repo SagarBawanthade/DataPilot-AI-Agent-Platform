@@ -1,10 +1,12 @@
+
 from django.urls import path
 
 from .views import (
     top_customers,
     monthly_revenue,
     inventory_health,
-    overdue_invoices
+    overdue_invoices,
+    copilot
 )
 
 urlpatterns = [
@@ -23,5 +25,8 @@ urlpatterns = [
     path(
         "invoices/overdue/",
         overdue_invoices
+    ),
+    path("copilot/", 
+    copilot
     ),
 ]
