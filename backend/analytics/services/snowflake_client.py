@@ -17,29 +17,54 @@ def get_connection():
     )
 
 
-def get_top_customers(limit=10):
+
+
+
+def run_query(query):
     conn = get_connection()
+    cur = conn.cursor()
 
-    try:
-        cursor = conn.cursor()
+    cur.execute(query)
 
-        query = f"""
+    columns = [col[0] for col in cur.description]
+
+    results = [
+        dict(zip(columns, row))
+        for row in cur.fetchall()
+    ]
+
+    cur.close()
+    conn.close()
+
+    return results
+
+
+def get_top_customers():
+    return run_query("""
         SELECT *
         FROM CUSTOMER_REVENUE
         ORDER BY TOTAL_REVENUE DESC
-        LIMIT {limit}
-        """
+        LIMIT 10
+    """)
 
-        cursor.execute(query)
 
-        columns = [col[0] for col in cursor.description]
+def get_monthly_revenue():
+    return run_query("""
+        SELECT *
+        FROM MONTHLY_REVENUE
+        ORDER BY REVENUE_MONTH DESC
+    """)
 
-        results = [
-            dict(zip(columns, row))
-            for row in cursor.fetchall()
-        ]
 
-        return results
+def get_inventory_health():
+    return run_query("""
+        SELECT *
+        FROM INVENTORY_HEALTH
+    """)
 
-    finally:
-        conn.close()
+
+def get_overdue_invoices():
+    return run_query("""
+        SELECT *
+        FROM OVERDUE_INVOICES
+    """)

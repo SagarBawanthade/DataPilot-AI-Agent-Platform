@@ -1,10 +1,7 @@
-select
-    date_trunc('month', order_date) as revenue_month,
-    sum(total_amount) as revenue
-
-from {{ ref('stg_orders') }}
-
-where status = 'completed'
-
-group by 1
-order by 1
+SELECT
+    DATE_TRUNC('month', order_date) AS revenue_month,
+    COUNT(order_id) AS total_orders,
+    ROUND(SUM(total_amount), 2) AS revenue
+FROM {{ ref('stg_orders') }}
+GROUP BY revenue_month
+ORDER BY revenue_month
