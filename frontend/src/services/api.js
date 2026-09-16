@@ -11,5 +11,6 @@ export const getTopCustomers = () => API.get("/customers/top/");
 export const getMonthlyRevenue = () => API.get("/revenue/monthly/");
 export const getInventoryHealth = () => API.get("/inventory/health/");
 export const getOverdueInvoices = () => API.get("/invoices/overdue/");
+export const askCopilot = (question) => API.post("/copilot/", { question });
 
 export default API;
