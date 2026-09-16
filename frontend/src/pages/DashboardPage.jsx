@@ -14,6 +14,7 @@ import TopCustomersTable from "../components/TopCustomersTable";
 import InventoryTable from "../components/InventoryTable";
 import OverdueInvoicesTable from "../components/OverdueInvoicesTable";
 import MonthlyBreakdownTable from "../components/MonthlyBreakdownTable";
+import CopilotChat from "../components/CopilotChat";
 
 import {
   TrendingUp,
@@ -25,6 +26,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   ShoppingCart,
+  Sparkles,
+  Database,
 } from "lucide-react";
 import { formatCurrency, getDaysOverdue } from "../utils/formatters";
 
@@ -40,6 +43,7 @@ export default function DashboardPage() {
   const [error, setError] = useState(null);
   const [backendOnline, setBackendOnline] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [copilotDrawerOpen, setCopilotDrawerOpen] = useState(false);
 
   // Pure dynamic data fetcher - directly hitting backend APIs
   const loadDashboardData = useCallback(async (isManual = false) => {
@@ -150,6 +154,7 @@ export default function DashboardPage() {
           refreshing={refreshing}
           lastUpdated={lastUpdated}
           backendOnline={backendOnline}
+          onOpenCopilot={() => setCopilotDrawerOpen(true)}
         />
 
         {/* Error notification if backend drops */}
@@ -401,7 +406,81 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* ================= VIEW 6: AI COPILOT ================= */}
+        {activeTab === "copilot" && (
+          <div className="space-y-6">
+            {/* 3 Domain Status Cards */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <KpiCard
+                title="AI Data Source"
+                value="Snowflake DW"
+                subtitle="Live direct warehouse connection"
+                icon={Database}
+                accent="indigo"
+              />
+              <KpiCard
+                title="Supported Marts"
+                value="4 Analytics Marts"
+                subtitle="Customers, Revenue, Stock, Invoices"
+                icon={Sparkles}
+                accent="emerald"
+              />
+              <KpiCard
+                title="Copilot Intelligence"
+                value="DataPilot Engine"
+                subtitle="Real-time SQL and analytical synthesis"
+                icon={CheckCircle2}
+                accent="slate"
+              />
+            </section>
+
+            {/* Google Gemini Full-Screen Experience */}
+            <CopilotChat
+              variant="full"
+              onNavigateTab={setActiveTab}
+            />
+          </div>
+        )}
       </main>
+
+      {/* ================= FLOATING COPILOT ACTION BUTTON (FAB) ================= */}
+      {activeTab !== "copilot" && (
+        <button
+          onClick={() => setCopilotDrawerOpen(true)}
+          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-medium text-xs sm:text-sm shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/20"
+          title="Open ERP AI Copilot"
+        >
+          <div className="relative">
+            <Sparkles size={18} className="animate-pulse" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-pink-400 animate-ping" />
+          </div>
+          <span className="font-semibold tracking-tight">Ask Copilot</span>
+        </button>
+      )}
+
+      {/* ================= SLIDE-OVER COPILOT DRAWER ================= */}
+      {copilotDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            onClick={() => setCopilotDrawerOpen(false)}
+          />
+
+          {/* Slide-out Panel */}
+          <div className="relative w-full max-w-lg md:max-w-xl bg-white shadow-2xl h-full flex flex-col z-50 p-3 sm:p-4">
+            <CopilotChat
+              variant="drawer"
+              onClose={() => setCopilotDrawerOpen(false)}
+              onNavigateTab={(tab) => {
+                setActiveTab(tab);
+                setCopilotDrawerOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

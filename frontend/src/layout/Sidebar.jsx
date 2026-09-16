@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Layers,
+  Sparkles,
 } from "lucide-react";
 
 export default function Sidebar({
@@ -51,6 +52,13 @@ export default function Sidebar({
       icon: CreditCard,
       count: invoicesCount > 0 ? invoicesCount : null,
       countColor: "bg-amber-500/20 text-amber-300",
+    },
+    {
+      id: "copilot",
+      name: "AI Copilot",
+      icon: Sparkles,
+      count: "AI",
+      countColor: "bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold shadow-xs",
     },
   ];
 

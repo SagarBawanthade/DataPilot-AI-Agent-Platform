@@ -1,4 +1,4 @@
-import { RefreshCw, ArrowLeft } from "lucide-react";
+import { RefreshCw, ArrowLeft, Sparkles } from "lucide-react";
 
 export default function Header({
   activeTab = "dashboard",
@@ -7,6 +7,7 @@ export default function Header({
   refreshing = false,
   lastUpdated,
   backendOnline = true,
+  onOpenCopilot = () => {},
 }) {
   const titles = {
     dashboard: "Overview Dashboard",
@@ -14,6 +15,7 @@ export default function Header({
     customers: "Top Enterprise Customers",
     inventory: "Inventory & Stock Health",
     invoices: "Overdue Receivables",
+    copilot: "ERP AI Copilot Assistant",
   };
 
   return (
@@ -52,12 +54,23 @@ export default function Header({
         </p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {lastUpdated && (
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-slate-400 font-mono hidden md:inline">
             Synced: {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
         )}
+
+        {activeTab !== "copilot" && (
+          <button
+            onClick={onOpenCopilot}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-indigo-700 border border-indigo-200/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+          >
+            <Sparkles size={13} className="text-indigo-600" />
+            <span>Ask Copilot</span>
+          </button>
+        )}
+
         <button
           onClick={onRefresh}
           disabled={refreshing}
