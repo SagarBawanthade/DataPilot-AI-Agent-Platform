@@ -1,3 +1,8 @@
+from analytics.ai.gemini_service import (
+    classify_question,
+    summarize_results
+)
+
 from analytics.services.snowflake_client import (
     get_top_customers,
     get_monthly_revenue,
@@ -6,26 +11,68 @@ from analytics.services.snowflake_client import (
 )
 
 
-def answer_question(question: str):
-    q = (question or "").strip().lower()
+def answer_question(question):
 
-    if any(k in q for k in ["customer", "client", "account", "buyer"]):
-        return get_top_customers()
+    intent = classify_question(question)
 
-    if any(k in q for k in ["revenue", "sales", "turnover", "income", "earning", "growth"]):
-        return get_monthly_revenue()
+    print("Intent:", intent)
 
-    if any(k in q for k in ["inventory", "stock", "product", "sku", "reorder", "warehouse"]):
-        return get_inventory_health()
+    if intent == "top_customers":
 
-    if any(k in q for k in ["invoice", "debt", "overdue", "bill", "unpaid", "receivable", "delinquent"]):
-        return get_overdue_invoices()
+        data = get_top_customers()
 
-    if any(k in q for k in ["hello", "hi", "hey", "help", "who are you", "what can you do"]):
+        summary = summarize_results(
+            question,
+            data
+        )
+
         return {
-            "message": "👋 Hello! I am your DataPilot ERP AI Copilot, connected to your Snowflake Data Warehouse. You can ask me questions such as:\n\n• \"Show me top 10 enterprise customers\"\n• \"What is our monthly revenue breakdown?\"\n• \"Which inventory items need reordering?\"\n• \"List all overdue customer invoices\""
+            "answer": summary,
+            "data": data
+        }
+
+    if intent == "monthly_revenue":
+
+        data = get_monthly_revenue()
+
+        summary = summarize_results(
+            question,
+            data
+        )
+
+        return {
+            "answer": summary,
+            "data": data
+        }
+
+    if intent == "inventory_health":
+
+        data = get_inventory_health()
+
+        summary = summarize_results(
+            question,
+            data
+        )
+
+        return {
+            "answer": summary,
+            "data": data
+        }
+
+    if intent == "overdue_invoices":
+
+        data = get_overdue_invoices()
+
+        summary = summarize_results(
+            question,
+            data
+        )
+
+        return {
+            "answer": summary,
+            "data": data
         }
 
     return {
-        "message": "I didn't quite catch that query. You can ask me about:\n\n• Top Enterprise Customers (e.g. \"Who are our top customers?\")\n• Monthly Revenue (e.g. \"Show monthly revenue trends\")\n• Inventory Health (e.g. \"Check stock levels and reorders\")\n• Overdue Invoices (e.g. \"Show overdue invoices\")"
+        "message": "Could not understand question"
     }
