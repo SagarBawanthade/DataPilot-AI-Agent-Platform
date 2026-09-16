@@ -1,16 +1,15 @@
-select
+SELECT
     p.product_id,
     p.product_name,
-    p.reorder_level,
     i.current_stock,
+    p.reorder_level,
 
-    case
-        when i.current_stock <= p.reorder_level
-        then 'RESTOCK'
-        else 'OK'
-    end as inventory_status
+    CASE
+        WHEN i.current_stock <= p.reorder_level
+        THEN 'REORDER'
+        ELSE 'HEALTHY'
+    END AS stock_status
 
-from {{ ref('stg_products') }} p
-
-join {{ ref('stg_inventory') }} i
-    on p.product_id = i.product_id
+FROM {{ ref('stg_products') }} p
+JOIN {{ ref('stg_inventory') }} i
+    ON p.product_id = i.product_id
