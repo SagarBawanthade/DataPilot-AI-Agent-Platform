@@ -21,13 +21,8 @@ def answer_question(question):
 
         data = get_top_customers()
 
-        summary = summarize_results(
-            question,
-            data
-        )
-
         return {
-            "answer": summary,
+            "answer": summarize_results(question, data),
             "data": data
         }
 
@@ -35,13 +30,8 @@ def answer_question(question):
 
         data = get_monthly_revenue()
 
-        summary = summarize_results(
-            question,
-            data
-        )
-
         return {
-            "answer": summary,
+            "answer": summarize_results(question, data),
             "data": data
         }
 
@@ -49,13 +39,8 @@ def answer_question(question):
 
         data = get_inventory_health()
 
-        summary = summarize_results(
-            question,
-            data
-        )
-
         return {
-            "answer": summary,
+            "answer": summarize_results(question, data),
             "data": data
         }
 
@@ -63,16 +48,12 @@ def answer_question(question):
 
         data = get_overdue_invoices()
 
-        summary = summarize_results(
-            question,
-            data
-        )
-
         return {
-            "answer": summary,
+            "answer": summarize_results(question, data),
             "data": data
         }
 
     return {
-        "message": "Could not understand question"
+        "answer": "I could not understand the question.",
+        "data": []
     }

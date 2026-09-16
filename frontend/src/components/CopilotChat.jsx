@@ -1,896 +1,1006 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { askCopilot as apiAskCopilot } from "../services/api";
 import {
   Sparkles,
-  Send,
-  User,
-  Trash2,
-  Copy,
-  Check,
+  ArrowUp,
+  RotateCcw,
+  X,
+  Database,
+  Table,
   Code2,
+  ExternalLink,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
   TrendingUp,
-  Users,
   Package,
+  Users,
   CreditCard,
-  AlertTriangle,
-  X,
-  ExternalLink,
+  ThumbsUp,
+  ThumbsDown,
+  Loader2,
+  Copy,
+  Check,
 } from "lucide-react";
-import { askCopilot } from "../services/api";
-import { formatCurrency, formatMonthLabel } from "../utils/formatters";
+import {
+  formatCurrency,
+  formatNumber,
+  formatMonthLabel,
+  formatFullDate,
+} from "../utils/formatters";
 
-let globalMessageId = 0;
-function createMessageId(prefix = "msg") {
-  globalMessageId += 1;
-  return `${prefix}-${globalMessageId}`;
+// ==========================================
+// 1. MARKDOWN PARSER & RENDERER COMPONENT
+// ==========================================
+
+function renderInlineText(text) {
+  if (!text) return null;
+
+  const tokens = [];
+  let remaining = text;
+  let keyIdx = 0;
+
+  // Regex to match bold (**text**), inline code (`code`), and italic (*text*)
+  const regex = /(\*\*.*?\*\*|`.*?`|\*[^*]+\*)/;
+
+  while (remaining) {
+    const match = remaining.match(regex);
+    if (!match) {
+      tokens.push(remaining);
+      break;
+    }
+
+    const matchIndex = match.index;
+    if (matchIndex > 0) {
+      tokens.push(remaining.substring(0, matchIndex));
+    }
+
+    const matchedStr = match[0];
+    if (matchedStr.startsWith("**") && matchedStr.endsWith("**")) {
+      tokens.push(
+        <strong key={keyIdx++} className="font-semibold text-slate-900">
+          {matchedStr.slice(2, -2)}
+        </strong>
+      );
+    } else if (matchedStr.startsWith("`") && matchedStr.endsWith("`")) {
+      tokens.push(
+        <code
+          key={keyIdx++}
+          className="px-1.5 py-0.5 rounded bg-slate-100 text-indigo-700 font-mono text-xs border border-slate-200/80"
+        >
+          {matchedStr.slice(1, -1)}
+        </code>
+      );
+    } else if (matchedStr.startsWith("*") && matchedStr.endsWith("*")) {
+      tokens.push(
+        <em key={keyIdx++} className="italic text-slate-800">
+          {matchedStr.slice(1, -1)}
+        </em>
+      );
+    } else {
+      tokens.push(matchedStr);
+    }
+
+    remaining = remaining.substring(matchIndex + matchedStr.length);
+  }
+
+  return tokens;
 }
 
-// Suggested prompt quick chips
-const SUGGESTED_PROMPTS = [
-  {
-    label: "Top 10 Customers",
-    query: "Show top 10 enterprise customers",
-    icon: Users,
-    color: "from-blue-500/10 to-indigo-500/10 text-indigo-700 border-indigo-200 hover:border-indigo-400",
-  },
-  {
-    label: "Monthly Revenue",
-    query: "What is our monthly revenue breakdown?",
-    icon: TrendingUp,
-    color: "from-emerald-500/10 to-teal-500/10 text-emerald-700 border-emerald-200 hover:border-emerald-400",
-  },
-  {
-    label: "Critical Stock Alert",
-    query: "Which inventory items require restocking?",
-    icon: Package,
-    color: "from-amber-500/10 to-rose-500/10 text-amber-700 border-amber-200 hover:border-amber-400",
-  },
-  {
-    label: "Overdue Invoices",
-    query: "List all overdue customer invoices",
-    icon: CreditCard,
-    color: "from-rose-500/10 to-red-500/10 text-rose-700 border-rose-200 hover:border-rose-400",
-  },
-];
+function parseMarkdownBlocks(text) {
+  if (!text) return [];
+  const lines = text.split("\n");
+  const blocks = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Horizontal Rule
+    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(line.trim())) {
+      blocks.push({ type: "hr" });
+      i++;
+      continue;
+    }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      blocks.push({
+        type: "heading",
+        level: headingMatch[1].length,
+        text: headingMatch[2].replace(/\*\*/g, ""),
+      });
+      i++;
+      continue;
+    }
+
+    // Markdown Table
+    if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+      const tableLines = [];
+      while (
+        i < lines.length &&
+        lines[i].trim().startsWith("|") &&
+        lines[i].trim().endsWith("|")
+      ) {
+        tableLines.push(lines[i].trim());
+        i++;
+      }
+      if (tableLines.length >= 2) {
+        const rawHeaders = tableLines[0].split("|").slice(1, -1).map((h) => h.trim());
+        const rows = tableLines
+          .slice(2)
+          .map((r) => r.split("|").slice(1, -1).map((c) => c.trim()));
+        blocks.push({
+          type: "table",
+          headers: rawHeaders,
+          rows,
+        });
+        continue;
+      }
+    }
+
+    // Code Block
+    if (line.trim().startsWith("```")) {
+      const codeLines = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length) i++;
+      blocks.push({
+        type: "code",
+        content: codeLines.join("\n"),
+      });
+      continue;
+    }
+
+    // Bullet or Numbered List
+    const listMatch = line.match(/^(\s*)([*•-]|\d+\.)\s+(.+)$/);
+    if (listMatch) {
+      const listItems = [];
+      while (i < lines.length) {
+        const itemMatch = lines[i].match(/^(\s*)([*•-]|\d+\.)\s+(.+)$/);
+        if (itemMatch) {
+          listItems.push({
+            indent: itemMatch[1].length,
+            bullet: itemMatch[2],
+            isNumber: /^\d+\./.test(itemMatch[2]),
+            text: itemMatch[3],
+          });
+          i++;
+        } else if (lines[i].trim() === "") {
+          i++;
+          break;
+        } else {
+          break;
+        }
+      }
+      blocks.push({
+        type: "list",
+        items: listItems,
+      });
+      continue;
+    }
+
+    // Blank line
+    if (!line.trim()) {
+      i++;
+      continue;
+    }
+
+    // Regular Paragraph
+    const paraLines = [];
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !lines[i].match(/^#{1,4}\s+/) &&
+      !lines[i].trim().startsWith("|") &&
+      !lines[i].trim().startsWith("```") &&
+      !lines[i].match(/^(\s*)([*•-]|\d+\.)\s+/) &&
+      !/^(-{3,}|\*{3,})\s*$/.test(lines[i].trim())
+    ) {
+      paraLines.push(lines[i]);
+      i++;
+    }
+    blocks.push({
+      type: "paragraph",
+      text: paraLines.join(" "),
+    });
+  }
+
+  return blocks;
+}
+
+function MarkdownMessage({ content }) {
+  const blocks = parseMarkdownBlocks(content);
+
+  return (
+    <div className="text-slate-800 space-y-2.5 text-xs sm:text-sm leading-relaxed">
+      {blocks.map((block, idx) => {
+        if (block.type === "hr") {
+          return <hr key={idx} className="my-3.5 border-t border-slate-200/80" />;
+        }
+
+        if (block.type === "heading") {
+          if (block.level === 1) {
+            return (
+              <h1 key={idx} className="text-base sm:text-lg font-bold text-slate-900 mt-4 mb-1">
+                {renderInlineText(block.text)}
+              </h1>
+            );
+          }
+          if (block.level === 2) {
+            return (
+              <h2 key={idx} className="text-sm sm:text-base font-bold text-slate-900 mt-3.5 mb-1 text-indigo-950">
+                {renderInlineText(block.text)}
+              </h2>
+            );
+          }
+          return (
+            <h3 key={idx} className="text-xs sm:text-sm font-bold text-slate-900 mt-3 mb-1 tracking-tight text-indigo-900">
+              {renderInlineText(block.text)}
+            </h3>
+          );
+        }
+
+        if (block.type === "table") {
+          return (
+            <div key={idx} className="my-3 overflow-x-auto rounded-xl border border-slate-200 shadow-2xs bg-white">
+              <table className="w-full text-xs text-left border-collapse min-w-[340px]">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    {block.headers.map((h, hIdx) => (
+                      <th
+                        key={hIdx}
+                        className="px-3 py-2 font-semibold text-slate-700 uppercase tracking-wider text-[11px]"
+                      >
+                        {renderInlineText(h)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {block.rows.map((row, rIdx) => (
+                    <tr key={rIdx} className="hover:bg-slate-50/70 transition-colors">
+                      {row.map((cell, cIdx) => (
+                        <td key={cIdx} className="px-3 py-2 text-slate-700 font-mono text-[11px] sm:text-xs">
+                          {renderInlineText(cell)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+
+        if (block.type === "code") {
+          return (
+            <pre
+              key={idx}
+              className="my-2 p-3 bg-slate-900 text-slate-200 rounded-xl text-xs font-mono overflow-x-auto"
+            >
+              <code>{block.content}</code>
+            </pre>
+          );
+        }
+
+        if (block.type === "list") {
+          return (
+            <div key={idx} className="space-y-1.5 my-2">
+              {block.items.map((item, itemIdx) => (
+                <div
+                  key={itemIdx}
+                  className="flex items-start gap-2 text-slate-700"
+                  style={{ marginLeft: `${Math.min(item.indent * 8, 24)}px` }}
+                >
+                  {item.isNumber ? (
+                    <span className="font-semibold text-indigo-600 text-xs w-4 shrink-0">
+                      {item.bullet}
+                    </span>
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                  )}
+                  <div className="flex-1">{renderInlineText(item.text)}</div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+
+        if (block.type === "paragraph") {
+          return (
+            <p key={idx} className="text-slate-700 leading-relaxed">
+              {renderInlineText(block.text)}
+            </p>
+          );
+        }
+
+        return null;
+      })}
+    </div>
+  );
+}
+
+// ==========================================
+// 2. DATA INSPECTOR (SNOWFLAKE WAREHOUSE DATA)
+// ==========================================
+
+function DataInspector({ data, onNavigateTab }) {
+  const [activeTab, setActiveTab] = useState("table"); // 'table' | 'json'
+  const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  if (!Array.isArray(data) || data.length === 0) return null;
+
+  const columns = Object.keys(data[0]);
+  const displayRows = expanded ? data : data.slice(0, 5);
+
+  const handleCopyJson = () => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Determine relevant destination tab
+  const getRelevantTab = () => {
+    if (columns.some((c) => c.includes("CUSTOMER"))) return { id: "customers", name: "Top Customers" };
+    if (columns.some((c) => c.includes("REVENUE"))) return { id: "revenue", name: "Monthly Revenue" };
+    if (columns.some((c) => c.includes("STOCK") || c.includes("SKU"))) return { id: "inventory", name: "Inventory Health" };
+    if (columns.some((c) => c.includes("INVOICE") || c.includes("DUE"))) return { id: "invoices", name: "Overdue Invoices" };
+    return null;
+  };
+
+  const relevantTab = getRelevantTab();
+
+  const formatHeader = (key) => {
+    return key
+      .toLowerCase()
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
+
+  const formatCellValue = (key, val) => {
+    if (val === undefined || val === null) return "—";
+    const k = key.toUpperCase();
+
+    if (k.includes("REVENUE") || k.includes("AMOUNT") || k.includes("PRICE")) {
+      return (
+        <span className="font-semibold text-slate-900 font-mono">
+          {formatCurrency(val)}
+        </span>
+      );
+    }
+    if (k.includes("STATUS")) {
+      const s = String(val).toUpperCase();
+      const isBad = s === "REORDER" || s === "OVERDUE";
+      return (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            isBad
+              ? "bg-rose-50 text-rose-700 border-rose-200"
+              : "bg-emerald-50 text-emerald-700 border-emerald-200"
+          }`}
+        >
+          {val}
+        </span>
+      );
+    }
+    if (k.includes("DATE") || k.includes("MONTH")) {
+      return (
+        <span className="text-slate-600 font-mono text-[11px]">
+          {k.includes("MONTH") ? formatMonthLabel(val) : formatFullDate(val)}
+        </span>
+      );
+    }
+    if (typeof val === "number") {
+      return <span className="font-mono">{formatNumber(val)}</span>;
+    }
+    return String(val);
+  };
+
+  return (
+    <div className="mt-3.5 rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden text-xs">
+      {/* Top Bar with View Switcher */}
+      <div className="px-3 py-2 bg-slate-100/80 border-b border-slate-200 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+            <Database size={13} className="text-indigo-600" />
+            <span>Snowflake Warehouse Records</span>
+          </div>
+          <span className="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">
+            {data.length} {data.length === 1 ? "row" : "rows"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setActiveTab("table")}
+            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+              activeTab === "table"
+                ? "bg-white text-indigo-700 shadow-2xs font-semibold border border-slate-200"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <Table size={12} />
+            <span>Table</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("json")}
+            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+              activeTab === "json"
+                ? "bg-white text-indigo-700 shadow-2xs font-semibold border border-slate-200"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <Code2 size={12} />
+            <span>JSON</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      {activeTab === "table" ? (
+        <div>
+          <div className="overflow-x-auto max-h-72 overflow-y-auto">
+            <table className="w-full text-left border-collapse min-w-[400px]">
+              <thead className="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200 shadow-2xs">
+                <tr>
+                  {columns.map((col) => (
+                    <th
+                      key={col}
+                      className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600"
+                    >
+                      {formatHeader(col)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-150 bg-white">
+                {displayRows.map((row, rIdx) => (
+                  <tr key={rIdx} className="hover:bg-indigo-50/20 transition-colors">
+                    {columns.map((col) => (
+                      <td key={col} className="px-3 py-2 text-slate-700 text-xs">
+                        {formatCellValue(col, row[col])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer with Expand and Shortcut */}
+          <div className="px-3 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px]">
+            {data.length > 5 ? (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 cursor-pointer"
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp size={12} />
+                    <span>Show top 5 only</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={12} />
+                    <span>Show all {data.length} rows</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <span className="text-slate-400">All rows displayed</span>
+            )}
+
+            {relevantTab && onNavigateTab && (
+              <button
+                onClick={() => onNavigateTab(relevantTab.id)}
+                className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 cursor-pointer hover:underline"
+              >
+                <span>Open {relevantTab.name} Mart</span>
+                <ExternalLink size={11} />
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-64 overflow-y-auto">
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+          </div>
+          <button
+            onClick={handleCopyJson}
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer flex items-center gap-1 text-[10px]"
+            title="Copy JSON"
+          >
+            {copied ? (
+              <>
+                <Check size={11} className="text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy size={11} />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================
+// 3. EMPTY STATE WITH STARTER PROMPT CARDS
+// ==========================================
+
+function EmptyState({ onSelectPrompt }) {
+  const suggestions = [
+    {
+      title: "Top Customers",
+      prompt: "Who are my top customers?",
+      subtitle: "Ranked by total revenue and order volume",
+      icon: Users,
+      accent: "indigo",
+    },
+    {
+      title: "Monthly Revenue",
+      prompt: "Show monthly revenue trend",
+      subtitle: "Track historical trends & seasonal peak months",
+      icon: TrendingUp,
+      accent: "emerald",
+    },
+    {
+      title: "Overdue Invoices",
+      prompt: "Any overdue invoices?",
+      subtitle: "View delinquent balances and aging debt",
+      icon: CreditCard,
+      accent: "rose",
+    },
+    {
+      title: "Inventory Health",
+      prompt: "How is inventory health?",
+      subtitle: "Identify critical stockouts and reorder thresholds",
+      icon: Package,
+      accent: "amber",
+    },
+  ];
+
+  const accents = {
+    indigo: "border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/40 text-indigo-600 bg-indigo-50",
+    emerald: "border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50/40 text-emerald-600 bg-emerald-50",
+    rose: "border-rose-100 hover:border-rose-300 hover:bg-rose-50/40 text-rose-600 bg-rose-50",
+    amber: "border-amber-100 hover:border-amber-300 hover:bg-amber-50/40 text-amber-600 bg-amber-50",
+  };
+
+  return (
+    <div className="h-full flex flex-col items-center justify-center py-8 px-4 text-center select-none">
+      {/* Glowing AI Icon */}
+      <div className="relative mb-4">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+          <Sparkles size={28} className="animate-pulse" />
+        </div>
+        <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white" />
+        </span>
+      </div>
+
+      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mb-1.5">
+        How can I help with your ERP data?
+      </h2>
+      <p className="text-xs sm:text-sm text-slate-500 max-w-md mb-8">
+        Ask natural language questions across Snowflake data marts. Powered by Gemini 2.5 and live data synthesis.
+      </p>
+
+      {/* Starter Prompts Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl text-left">
+        {suggestions.map((item, idx) => {
+          const Icon = item.icon;
+          const accentStyle = accents[item.accent];
+
+          return (
+            <button
+              key={idx}
+              onClick={() => onSelectPrompt(item.prompt)}
+              className={`group p-3.5 rounded-xl border bg-white shadow-2xs hover:shadow-sm transition-all duration-150 cursor-pointer flex items-start gap-3 text-left ${accentStyle}`}
+            >
+              <div className="p-2 rounded-lg bg-white border border-slate-200/80 shrink-0 group-hover:scale-105 transition-transform">
+                <Icon size={16} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  {item.prompt}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+                  {item.subtitle}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 4. MAIN COPILOT CHAT COMPONENT
+// ==========================================
 
 export default function CopilotChat({
-  variant = "full", // 'full' (full-page tab) or 'drawer' (slide-out widget)
-  onClose = null,
-  onNavigateTab = null,
+  variant = "full", // "full" | "drawer"
+  onClose = () => {},
+  onNavigateTab = () => {},
 }) {
-  const [messages, setMessages] = useState([
-    {
-      id: "welcome-1",
-      sender: "assistant",
-      type: "welcome",
-      time: "Just now",
-      text: "👋 Hi! I am your DataPilot ERP Copilot, connected directly to your Snowflake Analytics Warehouse. Ask me any question about enterprise customers, monthly revenue, inventory health, or overdue invoices.",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [copiedId, setCopiedId] = useState(null);
-  const [expandedJson, setExpandedJson] = useState({});
+  const [likedMap, setLikedMap] = useState({});
 
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  // Auto-scroll on new messages
-  useEffect(() => {
+  // Auto-scroll to bottom
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
   }, [messages, loading]);
 
   // Focus input on mount
   useEffect(() => {
-    inputRef.current?.focus();
+    textareaRef.current?.focus();
   }, []);
 
-  // Classify response type based on Snowflake data payload
-  const detectPayloadType = (data) => {
-    if (Array.isArray(data)) {
-      if (data.length === 0) return "empty";
-      const sample = data[0];
-      if (sample.CUSTOMER_NAME !== undefined && sample.TOTAL_REVENUE !== undefined) {
-        return "customers";
-      }
-      if (sample.REVENUE_MONTH !== undefined || sample.REVENUE !== undefined) {
-        return "revenue";
-      }
-      if (sample.STOCK_STATUS !== undefined || sample.CURRENT_STOCK !== undefined) {
-        return "inventory";
-      }
-      if (sample.INVOICE_ID !== undefined || sample.DUE_DATE !== undefined) {
-        return "invoices";
-      }
-      return "generic_table";
-    }
+  // Execution function
+  const executeQuery = async (queryText) => {
+    const textToSend = queryText || question;
+    if (!textToSend || !textToSend.trim() || loading) return;
 
-    if (typeof data === "object" && data !== null) {
-      if (data.error) return "error";
-      if (data.message) return "text";
-      return "json";
-    }
+    const userMsgId = Date.now();
+    const userMessage = {
+      id: userMsgId,
+      role: "user",
+      content: textToSend.trim(),
+      timestamp: new Date(),
+    };
 
-    return "text";
-  };
+    setMessages((prev) => [...prev, userMessage]);
+    setQuestion("");
+    setLoading(true);
 
-  // Submit question
-  const handleSend = useCallback(
-    async (questionText = null) => {
-      const query = (questionText ?? input).trim();
-      if (!query || loading) return;
+    try {
+      let res;
+      if (typeof apiAskCopilot === "function") {
+        res = await apiAskCopilot(textToSend.trim());
+      } else {
+        res = await axios.post("http://127.0.0.1:8000/api/copilot/", {
+          question: textToSend.trim(),
+        });
+      }
 
-      const userMessage = {
-        id: createMessageId("user"),
-        sender: "user",
-        text: query,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+      const answer =
+        res?.data?.answer ||
+        res?.data?.message ||
+        "I processed your query, but received an empty response from the analytics engine.";
+
+      const aiMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        answer: answer,
+        data: res?.data?.data || null,
+        timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, userMessage]);
-      setInput("");
-      setLoading(true);
-
-      try {
-        const res = await askCopilot(query);
-        const payloadType = detectPayloadType(res.data);
-
-        const assistantMessage = {
-          id: createMessageId("assistant"),
-          sender: "assistant",
-          type: payloadType,
-          raw: res.data,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          text:
-            typeof res.data === "object" && res.data?.message
-              ? res.data.message
-              : null,
-        };
-
-        setMessages((prev) => [...prev, assistantMessage]);
-      } catch (err) {
-        console.error("Copilot query failed:", err);
-        const errorMessage = {
-          id: createMessageId("error"),
-          sender: "assistant",
-          type: "error",
-          text:
-            err.response?.data?.message ||
-            "Unable to query Snowflake warehouse. Ensure backend service is running on port 8000.",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        };
-        setMessages((prev) => [...prev, errorMessage]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [input, loading]
-  );
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error("Copilot request error:", err);
+      const errorMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        isError: true,
+        answer:
+          "Unable to reach the ERP Copilot service. Please ensure the analytics backend is active on port 8000.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      executeQuery();
     }
   };
 
-  const handleClearChat = useCallback(() => {
-    setMessages([
-      {
-        id: createMessageId("welcome"),
-        sender: "assistant",
-        type: "welcome",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        text: "👋 Chat reset. What would you like to investigate in Snowflake next?",
-      },
-    ]);
-  }, []);
-
-  const copyToClipboard = (text, id) => {
+  const handleCopyMessage = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const toggleJson = (id) => {
-    setExpandedJson((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleToggleFeedback = (id, type) => {
+    setLikedMap((prev) => ({
+      ...prev,
+      [id]: prev[id] === type ? null : type,
+    }));
   };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    setQuestion("");
+    textareaRef.current?.focus();
+  };
+
+  const quickChips = [
+    "Who are my top customers?",
+    "Show monthly revenue trend",
+    "Any overdue invoices?",
+    "How is inventory health?",
+  ];
 
   const isDrawer = variant === "drawer";
 
   return (
     <div
-      className={`flex flex-col bg-white border border-slate-200/80 shadow-sm overflow-hidden ${
+      className={`flex flex-col bg-white overflow-hidden ${
         isDrawer
-          ? "h-full w-full rounded-2xl"
-          : "min-h-[640px] h-[calc(100vh-140px)] rounded-2xl"
+          ? "h-full w-full"
+          : "h-[740px] rounded-2xl border border-slate-200/90 shadow-sm"
       }`}
     >
       {/* ================= HEADER ================= */}
-      <div className="px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-slate-50 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white shadow-md shadow-indigo-500/20">
-            <Sparkles size={20} className="animate-pulse" />
+      <div className="px-4 py-3.5 border-b border-slate-200 bg-white flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-2xs">
+            <Sparkles size={16} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-slate-900 tracking-tight">
-                DataPilot AI Copilot
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+                ERP Copilot
               </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
-                Snowflake DW Live
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Snowflake Live
               </span>
             </div>
-            <p className="text-xs text-slate-500">
-              Conversational intelligence for your ERP analytics
+            <p className="text-[11px] text-slate-500">
+              Natural language intelligence for enterprise metrics
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={handleClearChat}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-            title="Clear conversation"
-          >
-            <Trash2 size={16} />
-          </button>
-          {onClose && (
+          {messages.length > 0 && (
+            <button
+              onClick={handleClearChat}
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              title="Reset conversation"
+            >
+              <RotateCcw size={15} />
+            </button>
+          )}
+
+          {isDrawer && (
             <button
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
               title="Close Copilot"
             >
-              <X size={18} />
+              <X size={17} />
             </button>
           )}
         </div>
       </div>
 
-      {/* ================= MESSAGE STREAM ================= */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50/40">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-3 max-w-3xl ${
-              msg.sender === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-            }`}
-          >
-            {/* Avatar */}
-            <div className="shrink-0 mt-1">
-              {msg.sender === "user" ? (
-                <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold shadow-xs">
-                  <User size={15} />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
-                  <Sparkles size={15} />
-                </div>
-              )}
-            </div>
+      {/* ================= CHAT HISTORY SCROLL AREA ================= */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 bg-slate-50/40">
+        {messages.length === 0 ? (
+          <EmptyState onSelectPrompt={executeQuery} />
+        ) : (
+          <>
+            {messages.map((msg, idx) => (
+              <div key={msg.id || idx} className="space-y-1">
+                {msg.role === "user" ? (
+                  // User Message
+                  <div className="flex justify-end">
+                    <div className="max-w-[85%] sm:max-w-lg bg-indigo-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-xs shadow-2xs text-xs sm:text-sm leading-relaxed">
+                      {msg.content}
+                    </div>
+                  </div>
+                ) : (
+                  // Assistant Message
+                  <div className="flex items-start gap-2.5 max-w-full">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-2xs">
+                      <Sparkles size={14} />
+                    </div>
 
-            {/* Bubble Content */}
-            <div
-              className={`flex flex-col space-y-2 ${
-                msg.sender === "user" ? "items-end max-w-[85%]" : "items-start w-full"
-              }`}
-            >
-              {/* Message Header info */}
-              <div className="flex items-center gap-2 px-1 text-[11px] text-slate-400">
-                <span className="font-medium text-slate-600">
-                  {msg.sender === "user" ? "You" : "DataPilot Copilot"}
-                </span>
-                <span>•</span>
-                <span>{msg.time || "Just now"}</span>
-              </div>
-
-              {/* User Bubble */}
-              {msg.sender === "user" && (
-                <div className="px-4 py-3 rounded-2xl rounded-tr-xs bg-gradient-to-r from-indigo-600 to-indigo-700 text-white text-xs sm:text-sm font-normal shadow-sm">
-                  {msg.text}
-                </div>
-              )}
-
-              {/* Assistant Bubble */}
-              {msg.sender === "assistant" && (
-                <div className="w-full bg-white rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs p-4 sm:p-5 text-slate-800 text-xs sm:text-sm">
-                  {/* Render based on payload type */}
-                  {msg.type === "welcome" && (
-                    <div className="space-y-4">
-                      <p className="text-slate-700 leading-relaxed">
-                        {msg.text}
-                      </p>
-                      <div className="pt-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2">
-                          Suggested Questions
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {SUGGESTED_PROMPTS.map((item, idx) => {
-                            const Icon = item.icon;
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => handleSend(item.query)}
-                                className={`flex items-center gap-2.5 p-2.5 rounded-xl border bg-gradient-to-r ${item.color} text-left transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer`}
-                              >
-                                <Icon size={16} className="shrink-0" />
-                                <span className="text-xs font-medium truncate">
-                                  {item.label}
-                                </span>
-                              </button>
-                            );
-                          })}
+                    <div className="flex-1 min-w-0 bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 shadow-2xs">
+                      {/* Sub-header */}
+                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-100">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+                          <span>DataPilot Copilot</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-[10px] font-normal text-slate-400">Gemini 2.5</span>
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {msg.type === "text" && (
-                    <div className="whitespace-pre-line leading-relaxed text-slate-700">
-                      {msg.text}
-                    </div>
-                  )}
-
-                  {msg.type === "error" && (
-                    <div className="flex items-start gap-2.5 text-rose-700 bg-rose-50 p-3 rounded-xl border border-rose-200">
-                      <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-semibold text-xs">Error Querying Warehouse</div>
-                        <div className="text-xs mt-0.5">{msg.text}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CUSTOMERS TABLE VIEW */}
-                  {msg.type === "customers" && (
-                    <CustomersResultView
-                      data={msg.raw}
-                      onNavigateTab={onNavigateTab}
-                    />
-                  )}
-
-                  {/* REVENUE TABLE VIEW */}
-                  {msg.type === "revenue" && (
-                    <RevenueResultView
-                      data={msg.raw}
-                      onNavigateTab={onNavigateTab}
-                    />
-                  )}
-
-                  {/* INVENTORY TABLE VIEW */}
-                  {msg.type === "inventory" && (
-                    <InventoryResultView
-                      data={msg.raw}
-                      onNavigateTab={onNavigateTab}
-                    />
-                  )}
-
-                  {/* INVOICES TABLE VIEW */}
-                  {msg.type === "invoices" && (
-                    <InvoicesResultView
-                      data={msg.raw}
-                      onNavigateTab={onNavigateTab}
-                    />
-                  )}
-
-                  {/* GENERIC DATA / EMPTY */}
-                  {msg.type === "generic_table" && (
-                    <GenericResultView data={msg.raw} />
-                  )}
-
-                  {msg.type === "empty" && (
-                    <div className="text-slate-500 italic py-2">
-                      Query executed successfully, but returned 0 records.
-                    </div>
-                  )}
-
-                  {/* Action Bar (Copy & Raw JSON Toggle) */}
-                  {msg.type !== "welcome" && (
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() =>
-                            copyToClipboard(
-                              typeof msg.raw === "object"
-                                ? JSON.stringify(msg.raw, null, 2)
-                                : msg.text || "",
-                              msg.id
-                            )
-                          }
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                        >
-                          {copiedId === msg.id ? (
-                            <>
-                              <Check size={13} className="text-emerald-600" />
-                              <span className="text-emerald-600 font-medium">Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy size={13} />
-                              <span>Copy Response</span>
-                            </>
-                          )}
-                        </button>
-
-                        {msg.raw && (
-                          <button
-                            onClick={() => toggleJson(msg.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-                          >
-                            <Code2 size={13} />
-                            <span>{expandedJson[msg.id] ? "Hide JSON" : "Raw JSON"}</span>
-                            {expandedJson[msg.id] ? (
-                              <ChevronUp size={13} />
-                            ) : (
-                              <ChevronDown size={13} />
-                            )}
-                          </button>
+                        {msg.timestamp && (
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
                         )}
                       </div>
 
-                      <span className="text-[10px] font-mono text-slate-400">
-                        Snowflake Realtime
-                      </span>
-                    </div>
-                  )}
+                      {/* Content */}
+                      <MarkdownMessage content={msg.answer} />
 
-                  {/* Collapsible Raw JSON preview */}
-                  {expandedJson[msg.id] && msg.raw && (
-                    <div className="mt-3 relative">
-                      <pre className="p-3 bg-slate-900 text-emerald-400 rounded-xl text-[11px] font-mono overflow-x-auto max-h-60">
-                        {JSON.stringify(msg.raw, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+                      {/* Snowflake Data Inspector */}
+                      {msg.data && (
+                        <DataInspector
+                          data={msg.data}
+                          onNavigateTab={onNavigateTab}
+                        />
+                      )}
 
-        {/* Typing / Loading Indicator */}
-        {loading && (
-          <div className="flex gap-3 max-w-3xl mr-auto animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles size={15} className="animate-spin" />
-            </div>
-            <div className="bg-white rounded-2xl rounded-tl-xs border border-slate-200/80 shadow-xs px-5 py-4 flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-purple-600 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-pink-500 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      {/* Action Bar */}
+                      <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleCopyMessage(msg.answer, msg.id || idx)}
+                            className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
+                            title="Copy response"
+                          >
+                            {copiedId === (msg.id || idx) ? (
+                              <>
+                                <Check size={12} className="text-emerald-500" />
+                                <span className="text-emerald-600 font-medium text-[10px]">
+                                  Copied
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy size={12} />
+                                <span className="text-[10px]">Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleToggleFeedback(msg.id || idx, "like")}
+                            className={`p-1 rounded transition-colors cursor-pointer ${
+                              likedMap[msg.id || idx] === "like"
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "hover:bg-slate-100 hover:text-slate-700"
+                            }`}
+                            title="Helpful"
+                          >
+                            <ThumbsUp size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleToggleFeedback(msg.id || idx, "dislike")}
+                            className={`p-1 rounded transition-colors cursor-pointer ${
+                              likedMap[msg.id || idx] === "dislike"
+                                ? "text-rose-600 bg-rose-50"
+                                : "hover:bg-slate-100 hover:text-slate-700"
+                            }`}
+                            title="Not helpful"
+                          >
+                            <ThumbsDown size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <span className="text-xs font-medium text-slate-500">
-                Querying Snowflake data warehouse...
-              </span>
-            </div>
+            ))}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="flex items-start gap-2.5 max-w-full">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 animate-pulse shadow-2xs">
+                  <Sparkles size={14} />
+                </div>
+                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" />
+                  </div>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Querying Snowflake warehouse & synthesizing insights...
+                  </span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </div>
+
+      {/* ================= INPUT FOOTER AREA ================= */}
+      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 space-y-2.5">
+        {/* Quick follow-up chips when messages exist */}
+        {messages.length > 0 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+              Suggestions:
+            </span>
+            {quickChips.map((chip, idx) => (
+              <button
+                key={idx}
+                onClick={() => executeQuery(chip)}
+                disabled={loading}
+                className="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-[11px] text-slate-600 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {chip}
+              </button>
+            ))}
           </div>
         )}
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* ================= INPUT FOOTER ================= */}
-      <div className="p-4 border-t border-slate-100 bg-white shrink-0">
+        {/* Input box */}
         <div className="relative flex items-center">
           <input
-            ref={inputRef}
+            ref={textareaRef}
             type="text"
-            placeholder="Ask about revenue, top customers, inventory, invoices..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={loading}
-            className="w-full pl-4 pr-24 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all shadow-2xs"
+            placeholder="Ask a question (e.g., Who are my top customers?)..."
+            className="w-full bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 pr-12 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
 
-          <div className="absolute right-2 flex items-center gap-1.5">
-            <button
-              onClick={() => handleSend()}
-              disabled={!input.trim() || loading}
-              className={`p-2 rounded-lg flex items-center justify-center text-white transition-all cursor-pointer ${
-                input.trim() && !loading
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 shadow-xs"
-                  : "bg-slate-300 cursor-not-allowed"
-              }`}
-              title="Send question"
-            >
-              <Send size={15} />
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 px-1">
-          <span>Press Enter to send</span>
-          <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Live Analytics Marts
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// SUB-RENDERERS FOR RICH ANALYTICS RESULTS
-// ==========================================
-
-function CustomersResultView({ data, onNavigateTab }) {
-  const topAccounts = useMemo(() => (Array.isArray(data) ? data : []), [data]);
-  const totalRev = useMemo(
-    () => topAccounts.reduce((sum, c) => sum + Number(c.TOTAL_REVENUE || 0), 0),
-    [topAccounts]
-  );
-  const topOne = topAccounts[0];
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-slate-900 text-sm">
-            Top Enterprise Customers
-          </h3>
-          <p className="text-xs text-slate-500">
-            Retrieved {topAccounts.length} accounts representing {formatCurrency(totalRev)} in aggregate revenue.
-          </p>
-        </div>
-        {onNavigateTab && (
           <button
-            onClick={() => onNavigateTab("customers")}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer"
+            onClick={() => executeQuery()}
+            disabled={!question.trim() || loading}
+            className={`absolute right-1.5 sm:right-2 p-2 rounded-lg transition-all flex items-center justify-center ${
+              question.trim() && !loading
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs scale-100 hover:scale-105 active:scale-95 cursor-pointer"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+            }`}
+            title="Send query (Enter)"
           >
-            <span>Full Mart</span>
-            <ExternalLink size={12} />
-          </button>
-        )}
-      </div>
-
-      {topOne && (
-        <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/70 border border-indigo-100 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
-              #1
-            </div>
-            <div>
-              <div className="font-bold text-slate-900 text-xs">
-                {topOne.CUSTOMER_NAME}
-              </div>
-              <div className="text-[11px] text-slate-500">
-                {topOne.TOTAL_ORDERS} total orders placed
-              </div>
-            </div>
-          </div>
-          <div className="text-right font-mono">
-            <div className="font-bold text-indigo-700 text-xs">
-              {formatCurrency(topOne.TOTAL_REVENUE)}
-            </div>
-            <div className="text-[10px] text-slate-500">Top Account</div>
-          </div>
-        </div>
-      )}
-
-      {/* Mini Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 text-slate-500 font-medium border-b border-slate-100">
-            <tr>
-              <th className="py-2 px-3 w-8">#</th>
-              <th className="py-2 px-3">Customer</th>
-              <th className="py-2 px-3 text-center">Orders</th>
-              <th className="py-2 px-3 text-right">Revenue</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {topAccounts.slice(0, 5).map((c, idx) => (
-              <tr key={c.CUSTOMER_ID || idx} className="hover:bg-slate-50/50">
-                <td className="py-2 px-3 font-mono text-slate-400">{idx + 1}</td>
-                <td className="py-2 px-3 font-medium text-slate-800">{c.CUSTOMER_NAME}</td>
-                <td className="py-2 px-3 text-center font-mono text-slate-600">
-                  {c.TOTAL_ORDERS}
-                </td>
-                <td className="py-2 px-3 text-right font-mono font-semibold text-slate-900">
-                  {formatCurrency(c.TOTAL_REVENUE)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {topAccounts.length > 5 && (
-        <p className="text-[11px] text-slate-400 italic text-center">
-          Showing top 5 of {topAccounts.length} accounts.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function RevenueResultView({ data, onNavigateTab }) {
-  const list = useMemo(() => (Array.isArray(data) ? data : []), [data]);
-  const latestMonth = list[0];
-  const totalRev = useMemo(
-    () => list.reduce((sum, r) => sum + Number(r.REVENUE || 0), 0),
-    [list]
-  );
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-slate-900 text-sm">
-            Monthly Revenue Breakdown
-          </h3>
-          <p className="text-xs text-slate-500">
-            Recorded {list.length} monthly financial cycles ({formatCurrency(totalRev)} cumulative).
-          </p>
-        </div>
-        {onNavigateTab && (
-          <button
-            onClick={() => onNavigateTab("revenue")}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer"
-          >
-            <span>Revenue Chart</span>
-            <ExternalLink size={12} />
-          </button>
-        )}
-      </div>
-
-      {latestMonth && (
-        <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-teal-50/80 border border-emerald-100 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-semibold text-emerald-700 tracking-wider">
-              Latest Month
-            </span>
-            <div className="font-bold text-slate-900 text-xs">
-              {formatMonthLabel(latestMonth.REVENUE_MONTH)}
-            </div>
-          </div>
-          <div className="text-right font-mono">
-            <div className="font-bold text-emerald-700 text-xs">
-              {formatCurrency(latestMonth.REVENUE)}
-            </div>
-            <div className="text-[10px] text-slate-500">
-              {latestMonth.TOTAL_ORDERS || latestMonth.ORDERS} orders
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mini Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 text-slate-500 font-medium border-b border-slate-100">
-            <tr>
-              <th className="py-2 px-3">Period</th>
-              <th className="py-2 px-3 text-center">Orders</th>
-              <th className="py-2 px-3 text-right">Revenue</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {list.slice(0, 6).map((r, idx) => (
-              <tr key={idx} className="hover:bg-slate-50/50">
-                <td className="py-2 px-3 font-medium text-slate-800">
-                  {formatMonthLabel(r.REVENUE_MONTH)}
-                </td>
-                <td className="py-2 px-3 text-center font-mono text-slate-600">
-                  {r.TOTAL_ORDERS ?? r.ORDERS ?? 0}
-                </td>
-                <td className="py-2 px-3 text-right font-mono font-semibold text-slate-900">
-                  {formatCurrency(r.REVENUE)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function InventoryResultView({ data, onNavigateTab }) {
-  const items = Array.isArray(data) ? data : [];
-  const reorderList = items.filter(
-    (i) => (i.STOCK_STATUS || "").toUpperCase() === "REORDER"
-  );
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-slate-900 text-sm">
-            Inventory Health Status
-          </h3>
-          <p className="text-xs text-slate-500">
-            {items.length} SKUs tracked •{" "}
-            <span className={reorderList.length > 0 ? "text-rose-600 font-semibold" : "text-emerald-600"}>
-              {reorderList.length} items require reorder
-            </span>
-          </p>
-        </div>
-        {onNavigateTab && (
-          <button
-            onClick={() => onNavigateTab("inventory")}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer"
-          >
-            <span>Stock Mart</span>
-            <ExternalLink size={12} />
-          </button>
-        )}
-      </div>
-
-      {reorderList.length > 0 && (
-        <div className="p-3 rounded-xl bg-rose-50/80 border border-rose-200 flex items-center gap-2.5 text-rose-800">
-          <AlertTriangle size={16} className="shrink-0 text-rose-600" />
-          <span className="text-xs">
-            <strong>Urgent:</strong> {reorderList.length} SKUs are below their configured reorder thresholds.
-          </span>
-        </div>
-      )}
-
-      {/* Mini Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 text-slate-500 font-medium border-b border-slate-100">
-            <tr>
-              <th className="py-2 px-3">Product</th>
-              <th className="py-2 px-3 text-center">Stock</th>
-              <th className="py-2 px-3 text-center">Reorder Lvl</th>
-              <th className="py-2 px-3 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {(reorderList.length > 0 ? reorderList.slice(0, 6) : items.slice(0, 6)).map(
-              (p, idx) => {
-                const isReorder = (p.STOCK_STATUS || "").toUpperCase() === "REORDER";
-                return (
-                  <tr key={p.PRODUCT_ID || idx} className="hover:bg-slate-50/50">
-                    <td className="py-2 px-3 font-medium text-slate-800">
-                      {p.PRODUCT_NAME}
-                    </td>
-                    <td className="py-2 px-3 text-center font-mono">
-                      {p.CURRENT_STOCK}
-                    </td>
-                    <td className="py-2 px-3 text-center font-mono text-slate-400">
-                      {p.REORDER_LEVEL}
-                    </td>
-                    <td className="py-2 px-3 text-right">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          isReorder
-                            ? "bg-rose-100 text-rose-700"
-                            : "bg-emerald-100 text-emerald-700"
-                        }`}
-                      >
-                        {p.STOCK_STATUS}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              }
+            {loading ? (
+              <Loader2 size={15} className="animate-spin text-slate-500" />
+            ) : (
+              <ArrowUp size={15} strokeWidth={2.5} />
             )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function InvoicesResultView({ data, onNavigateTab }) {
-  const list = useMemo(() => (Array.isArray(data) ? data : []), [data]);
-  const totalOverdue = useMemo(
-    () => list.reduce((sum, inv) => sum + Number(inv.AMOUNT || 0), 0),
-    [list]
-  );
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-slate-900 text-sm">
-            Overdue Receivables
-          </h3>
-          <p className="text-xs text-slate-500">
-            {list.length} invoices overdue totaling{" "}
-            <span className="font-bold text-rose-600 font-mono">
-              {formatCurrency(totalOverdue)}
-            </span>
-          </p>
-        </div>
-        {onNavigateTab && (
-          <button
-            onClick={() => onNavigateTab("invoices")}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer"
-          >
-            <span>Invoices Mart</span>
-            <ExternalLink size={12} />
           </button>
-        )}
-      </div>
+        </div>
 
-      {/* Mini Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 text-slate-500 font-medium border-b border-slate-100">
-            <tr>
-              <th className="py-2 px-3">Invoice #</th>
-              <th className="py-2 px-3">Customer ID</th>
-              <th className="py-2 px-3 text-center">Due Date</th>
-              <th className="py-2 px-3 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {list.slice(0, 6).map((inv, idx) => (
-              <tr key={inv.INVOICE_ID || idx} className="hover:bg-slate-50/50">
-                <td className="py-2 px-3 font-mono font-medium text-slate-800">
-                  #{inv.INVOICE_ID}
-                </td>
-                <td className="py-2 px-3 text-slate-600">Cust #{inv.CUSTOMER_ID}</td>
-                <td className="py-2 px-3 text-center font-mono text-rose-600">
-                  {inv.DUE_DATE}
-                </td>
-                <td className="py-2 px-3 text-right font-mono font-semibold text-slate-900">
-                  {formatCurrency(inv.AMOUNT)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {list.length > 6 && (
-        <p className="text-[11px] text-slate-400 italic text-center">
-          Showing 6 of {list.length} overdue invoices.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function GenericResultView({ data }) {
-  if (!Array.isArray(data) || data.length === 0) return null;
-  const cols = Object.keys(data[0]);
-
-  return (
-    <div className="space-y-2">
-      <div className="text-xs font-semibold text-slate-700">Query Results ({data.length} rows)</div>
-      <div className="overflow-x-auto rounded-xl border border-slate-100">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 font-medium border-b border-slate-100">
-            <tr>
-              {cols.map((col) => (
-                <th key={col} className="py-2 px-3">{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {data.slice(0, 5).map((row, i) => (
-              <tr key={i}>
-                {cols.map((col) => (
-                  <td key={col} className="py-2 px-3 font-mono text-slate-700">
-                    {String(row[col])}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Footnote */}
+        <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+          <div className="flex items-center gap-1">
+            <span>Direct Snowflake warehouse marts connection</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-1">
+            <span>Press</span>
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-[9px] text-slate-600">
+              Enter ↵
+            </kbd>
+            <span>to send</span>
+          </div>
+        </div>
       </div>
     </div>
   );

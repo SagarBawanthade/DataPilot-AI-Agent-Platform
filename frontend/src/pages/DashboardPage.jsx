@@ -469,7 +469,7 @@ export default function DashboardPage() {
           />
 
           {/* Slide-out Panel */}
-          <div className="relative w-full max-w-lg md:max-w-xl bg-white shadow-2xl h-full flex flex-col z-50 p-3 sm:p-4">
+          <div className="relative w-full max-w-lg md:max-w-xl bg-white shadow-2xl h-full flex flex-col z-50 p-0 overflow-hidden">
             <CopilotChat
               variant="drawer"
               onClose={() => setCopilotDrawerOpen(false)}
