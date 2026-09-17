@@ -45,6 +45,30 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [copilotDrawerOpen, setCopilotDrawerOpen] = useState(false);
 
+  // Dark/Light Theme management
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("datapilot_theme");
+      if (saved) return saved;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "dark";
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("datapilot_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   // Pure dynamic data fetcher - directly hitting backend APIs
   const loadDashboardData = useCallback(async (isManual = false) => {
     if (isManual) setRefreshing(true);
@@ -135,17 +159,19 @@ export default function DashboardPage() {
   }, [customers]);
 
   return (
-    <div className="flex bg-slate-50 min-h-screen text-slate-900 selection:bg-indigo-500 selection:text-white">
+    <div className="flex bg-[#f8fafc] dark:bg-[#070b14] min-h-screen text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-200">
       {/* Functional Minimalist Sidebar */}
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         invoicesCount={invoices.length}
         reorderCount={criticalReorderCount}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 px-4 sm:px-8 py-8 max-w-[1500px] mx-auto w-full overflow-x-hidden">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-[1500px] mx-auto w-full overflow-x-hidden">
         {/* Header */}
         <Header
           activeTab={activeTab}
@@ -155,13 +181,15 @@ export default function DashboardPage() {
           lastUpdated={lastUpdated}
           backendOnline={backendOnline}
           onOpenCopilot={() => setCopilotDrawerOpen(true)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Error notification if backend drops */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between gap-3">
+          <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <AlertCircle size={16} className="text-rose-600 shrink-0" />
+              <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{error}</span>
             </div>
             <button
@@ -329,7 +357,7 @@ export default function DashboardPage() {
               />
             </section>
 
-            <div className="bg-white rounded-xl">
+            <div>
               <TopCustomersTable customers={customers} loading={loading} />
             </div>
           </div>
@@ -365,7 +393,7 @@ export default function DashboardPage() {
               />
             </section>
 
-            <div className="bg-white rounded-xl">
+            <div>
               <InventoryTable inventory={inventory} loading={loading} />
             </div>
           </div>
@@ -401,7 +429,7 @@ export default function DashboardPage() {
               />
             </section>
 
-            <div className="bg-white rounded-xl">
+            <div>
               <OverdueInvoicesTable invoices={invoices} loading={loading} />
             </div>
           </div>
@@ -448,12 +476,12 @@ export default function DashboardPage() {
       {activeTab !== "copilot" && (
         <button
           onClick={() => setCopilotDrawerOpen(true)}
-          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-medium text-xs sm:text-sm shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/20"
+          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm shadow-xl shadow-slate-900/20 dark:shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-slate-700/60 dark:border-indigo-400/30"
           title="Open ERP AI Copilot"
         >
-          <div className="relative">
-            <Sparkles size={18} className="animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-pink-400 animate-ping" />
+          <div className="relative flex items-center">
+            <Sparkles size={16} className="text-indigo-400 dark:text-white" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           </div>
           <span className="font-semibold tracking-tight">Ask Copilot</span>
         </button>
@@ -469,7 +497,7 @@ export default function DashboardPage() {
           />
 
           {/* Slide-out Panel */}
-          <div className="relative w-full max-w-lg md:max-w-xl bg-white shadow-2xl h-full flex flex-col z-50 p-0 overflow-hidden">
+          <div className="relative w-full max-w-lg md:max-w-xl bg-white dark:bg-[#0b101b] border-l border-slate-200 dark:border-slate-800 shadow-2xl h-full flex flex-col z-50 p-0 overflow-hidden">
             <CopilotChat
               variant="drawer"
               onClose={() => setCopilotDrawerOpen(false)}

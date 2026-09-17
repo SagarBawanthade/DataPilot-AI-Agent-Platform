@@ -36,26 +36,26 @@ export default function InventoryTable({ inventory = [], loading = false }) {
 
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-2xs h-[380px] flex items-center justify-center">
+      <div className="bg-white dark:bg-[#0f172a] p-6 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs h-[380px] flex items-center justify-center animate-pulse">
         <p className="text-xs text-slate-400 font-medium">Loading inventory data...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-2xs p-5 flex flex-col h-full">
+    <div className="bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-5 flex flex-col h-full transition-colors">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-slate-900 tracking-tight">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
               Inventory & Stock Status
             </h2>
-            <span className="text-[11px] font-mono px-2 py-0.2 rounded-full bg-slate-100 text-slate-600">
+            <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700">
               {inventory.length} SKUs
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Stock levels evaluated against safety reorder thresholds
           </p>
         </div>
@@ -68,42 +68,42 @@ export default function InventoryTable({ inventory = [], loading = false }) {
           />
           <input
             type="text"
-            placeholder="Filter product..."
+            placeholder="Filter product/SKU..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-32 sm:w-40 pl-7 pr-2.5 py-1 text-xs bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-slate-400 transition-colors placeholder:text-slate-400 text-slate-700"
+            className="w-32 sm:w-44 pl-7 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors placeholder:text-slate-400 text-slate-900 dark:text-slate-100"
           />
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1 mb-3 text-xs">
+      <div className="flex items-center gap-1.5 mb-3 text-xs flex-wrap">
         <button
           onClick={() => setFilter("all")}
-          className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer border ${
             filter === "all"
-              ? "bg-slate-900 text-white"
-              : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+              ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent shadow-2xs font-semibold"
+              : "text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
           }`}
         >
           All ({inventory.length})
         </button>
         <button
           onClick={() => setFilter("reorder")}
-          className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer border ${
             filter === "reorder"
-              ? "bg-rose-600 text-white"
-              : "text-rose-600 hover:bg-rose-50"
+              ? "bg-rose-600 text-white border-transparent shadow-2xs font-semibold"
+              : "text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/40"
           }`}
         >
           Reorder Required ({reorderItems.length})
         </button>
         <button
           onClick={() => setFilter("healthy")}
-          className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer border ${
             filter === "healthy"
-              ? "bg-emerald-600 text-white"
-              : "text-emerald-700 hover:bg-emerald-50"
+              ? "bg-emerald-600 text-white border-transparent shadow-2xs font-semibold"
+              : "text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
           }`}
         >
           Healthy ({inventory.length - reorderItems.length})
@@ -114,17 +114,17 @@ export default function InventoryTable({ inventory = [], loading = false }) {
       <div className="overflow-x-auto flex-1">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 text-slate-400 font-medium">
+            <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-medium">
               <th className="pb-2.5 pl-1 font-medium">Product / SKU</th>
               <th className="pb-2.5 font-medium text-center">Current Stock</th>
               <th className="pb-2.5 font-medium text-center">Reorder Level</th>
               <th className="pb-2.5 font-medium text-right pr-1">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-slate-400">
+                <td colSpan={4} className="py-8 text-center text-slate-400 dark:text-slate-500">
                   No inventory items match filter
                 </td>
               </tr>
@@ -139,28 +139,28 @@ export default function InventoryTable({ inventory = [], loading = false }) {
                 return (
                   <tr
                     key={item.PRODUCT_ID}
-                    className="hover:bg-slate-50/60 transition-colors"
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     <td className="py-2.5 pl-1">
-                      <div className="font-medium text-slate-900">
+                      <div className="font-medium text-slate-900 dark:text-slate-100">
                         {item.PRODUCT_NAME}
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                         SKU #{item.PRODUCT_ID}
                       </span>
                     </td>
-                    <td className="py-2.5 text-center font-mono font-semibold text-slate-800">
+                    <td className="py-2.5 text-center font-mono font-semibold text-slate-800 dark:text-slate-200">
                       {formatNumber(stock)}
                     </td>
-                    <td className="py-2.5 text-center font-mono text-slate-500">
+                    <td className="py-2.5 text-center font-mono text-slate-500 dark:text-slate-400">
                       {formatNumber(reorder)}
                     </td>
                     <td className="py-2.5 pr-1 text-right">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${
                           isReorder
-                            ? "bg-rose-50 text-rose-700 border border-rose-200"
-                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            ? "bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border-rose-200/80 dark:border-rose-900/60"
+                            : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-900/60"
                         }`}
                       >
                         {item.STOCK_STATUS || (isReorder ? "REORDER" : "HEALTHY")}
@@ -175,9 +175,9 @@ export default function InventoryTable({ inventory = [], loading = false }) {
       </div>
 
       {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <span>Showing {Math.min(filtered.length, 10)} of {inventory.length} items</span>
-        <span className="font-mono text-slate-700">
+        <span className="font-mono text-slate-700 dark:text-slate-300">
           Reorders: {reorderItems.length}
         </span>
       </div>

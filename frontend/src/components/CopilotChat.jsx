@@ -58,7 +58,7 @@ function renderInlineText(text) {
     const matchedStr = match[0];
     if (matchedStr.startsWith("**") && matchedStr.endsWith("**")) {
       tokens.push(
-        <strong key={keyIdx++} className="font-semibold text-slate-900">
+        <strong key={keyIdx++} className="font-semibold text-slate-900 dark:text-slate-100">
           {matchedStr.slice(2, -2)}
         </strong>
       );
@@ -66,14 +66,14 @@ function renderInlineText(text) {
       tokens.push(
         <code
           key={keyIdx++}
-          className="px-1.5 py-0.5 rounded bg-slate-100 text-indigo-700 font-mono text-xs border border-slate-200/80"
+          className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-mono text-xs border border-slate-200/80 dark:border-slate-700"
         >
           {matchedStr.slice(1, -1)}
         </code>
       );
     } else if (matchedStr.startsWith("*") && matchedStr.endsWith("*")) {
       tokens.push(
-        <em key={keyIdx++} className="italic text-slate-800">
+        <em key={keyIdx++} className="italic text-slate-800 dark:text-slate-200">
           {matchedStr.slice(1, -1)}
         </em>
       );
@@ -217,29 +217,29 @@ function MarkdownMessage({ content }) {
   const blocks = parseMarkdownBlocks(content);
 
   return (
-    <div className="text-slate-800 space-y-2.5 text-xs sm:text-sm leading-relaxed">
+    <div className="text-slate-800 dark:text-slate-200 space-y-2.5 text-xs sm:text-sm leading-relaxed">
       {blocks.map((block, idx) => {
         if (block.type === "hr") {
-          return <hr key={idx} className="my-3.5 border-t border-slate-200/80" />;
+          return <hr key={idx} className="my-3.5 border-t border-slate-200/80 dark:border-slate-800" />;
         }
 
         if (block.type === "heading") {
           if (block.level === 1) {
             return (
-              <h1 key={idx} className="text-base sm:text-lg font-bold text-slate-900 mt-4 mb-1">
+              <h1 key={idx} className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-4 mb-1">
                 {renderInlineText(block.text)}
               </h1>
             );
           }
           if (block.level === 2) {
             return (
-              <h2 key={idx} className="text-sm sm:text-base font-bold text-slate-900 mt-3.5 mb-1 text-indigo-950">
+              <h2 key={idx} className="text-sm sm:text-base font-bold text-slate-900 dark:text-indigo-300 mt-3.5 mb-1">
                 {renderInlineText(block.text)}
               </h2>
             );
           }
           return (
-            <h3 key={idx} className="text-xs sm:text-sm font-bold text-slate-900 mt-3 mb-1 tracking-tight text-indigo-900">
+            <h3 key={idx} className="text-xs sm:text-sm font-bold text-slate-900 dark:text-indigo-400 mt-3 mb-1 tracking-tight">
               {renderInlineText(block.text)}
             </h3>
           );
@@ -247,25 +247,25 @@ function MarkdownMessage({ content }) {
 
         if (block.type === "table") {
           return (
-            <div key={idx} className="my-3 overflow-x-auto rounded-xl border border-slate-200 shadow-2xs bg-white">
+            <div key={idx} className="my-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs bg-white dark:bg-slate-900">
               <table className="w-full text-xs text-left border-collapse min-w-[340px]">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
+                  <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800">
                     {block.headers.map((h, hIdx) => (
                       <th
                         key={hIdx}
-                        className="px-3 py-2 font-semibold text-slate-700 uppercase tracking-wider text-[11px]"
+                        className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px]"
                       >
                         {renderInlineText(h)}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {block.rows.map((row, rIdx) => (
-                    <tr key={rIdx} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={rIdx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
                       {row.map((cell, cIdx) => (
-                        <td key={cIdx} className="px-3 py-2 text-slate-700 font-mono text-[11px] sm:text-xs">
+                        <td key={cIdx} className="px-3 py-2 text-slate-700 dark:text-slate-300 font-mono text-[11px] sm:text-xs">
                           {renderInlineText(cell)}
                         </td>
                       ))}
@@ -281,7 +281,7 @@ function MarkdownMessage({ content }) {
           return (
             <pre
               key={idx}
-              className="my-2 p-3 bg-slate-900 text-slate-200 rounded-xl text-xs font-mono overflow-x-auto"
+              className="my-2 p-3 bg-slate-900 dark:bg-slate-950 text-slate-200 rounded-xl text-xs font-mono overflow-x-auto border border-slate-800"
             >
               <code>{block.content}</code>
             </pre>
@@ -294,15 +294,15 @@ function MarkdownMessage({ content }) {
               {block.items.map((item, itemIdx) => (
                 <div
                   key={itemIdx}
-                  className="flex items-start gap-2 text-slate-700"
+                  className="flex items-start gap-2 text-slate-700 dark:text-slate-300"
                   style={{ marginLeft: `${Math.min(item.indent * 8, 24)}px` }}
                 >
                   {item.isNumber ? (
-                    <span className="font-semibold text-indigo-600 text-xs w-4 shrink-0">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400 text-xs w-4 shrink-0">
                       {item.bullet}
                     </span>
                   ) : (
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-1.5 shrink-0" />
                   )}
                   <div className="flex-1">{renderInlineText(item.text)}</div>
                 </div>
@@ -313,7 +313,7 @@ function MarkdownMessage({ content }) {
 
         if (block.type === "paragraph") {
           return (
-            <p key={idx} className="text-slate-700 leading-relaxed">
+            <p key={idx} className="text-slate-700 dark:text-slate-300 leading-relaxed">
               {renderInlineText(block.text)}
             </p>
           );
@@ -347,10 +347,11 @@ function DataInspector({ data, onNavigateTab }) {
 
   // Determine relevant destination tab
   const getRelevantTab = () => {
+    if (columns.some((c) => c.includes("INVOICE") || c.includes("DUE") || c.includes("OVERDUE"))) return { id: "invoices", name: "Overdue Invoices" };
+    if (columns.some((c) => c.includes("STOCK") || c.includes("SKU") || c.includes("INVENTORY"))) return { id: "inventory", name: "Inventory Health" };
+    if (columns.some((c) => c.includes("MONTH") && c.includes("REVENUE"))) return { id: "revenue", name: "Monthly Revenue" };
     if (columns.some((c) => c.includes("CUSTOMER"))) return { id: "customers", name: "Top Customers" };
-    if (columns.some((c) => c.includes("REVENUE"))) return { id: "revenue", name: "Monthly Revenue" };
-    if (columns.some((c) => c.includes("STOCK") || c.includes("SKU"))) return { id: "inventory", name: "Inventory Health" };
-    if (columns.some((c) => c.includes("INVOICE") || c.includes("DUE"))) return { id: "invoices", name: "Overdue Invoices" };
+    if (columns.some((c) => c.includes("REVENUE") || c.includes("ORDER"))) return { id: "revenue", name: "Monthly Revenue" };
     return null;
   };
 
@@ -368,51 +369,37 @@ function DataInspector({ data, onNavigateTab }) {
     if (val === undefined || val === null) return "—";
     const k = key.toUpperCase();
 
-    if (k.includes("REVENUE") || k.includes("AMOUNT") || k.includes("PRICE")) {
-      return (
-        <span className="font-semibold text-slate-900 font-mono">
-          {formatCurrency(val)}
-        </span>
-      );
-    }
-    if (k.includes("STATUS")) {
-      const s = String(val).toUpperCase();
-      const isBad = s === "REORDER" || s === "OVERDUE";
-      return (
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-            isBad
-              ? "bg-rose-50 text-rose-700 border-rose-200"
-              : "bg-emerald-50 text-emerald-700 border-emerald-200"
-          }`}
-        >
-          {val}
-        </span>
-      );
-    }
+    // Check DATE or MONTH first (so REVENUE_MONTH is rendered as month/date, not currency ₹0)
     if (k.includes("DATE") || k.includes("MONTH")) {
       return (
-        <span className="text-slate-600 font-mono text-[11px]">
+        <span className="text-slate-600 dark:text-slate-400 font-mono text-[11px]">
           {k.includes("MONTH") ? formatMonthLabel(val) : formatFullDate(val)}
         </span>
       );
     }
-    if (typeof val === "number") {
-      return <span className="font-mono">{formatNumber(val)}</span>;
+    if (k.includes("REVENUE") || k.includes("AMOUNT") || k.includes("PRICE")) {
+      return (
+        <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+          {formatCurrency(val)}
+        </span>
+      );
     }
-    return String(val);
+    if (typeof val === "number") {
+      return <span className="font-mono text-slate-800 dark:text-slate-200">{formatNumber(val)}</span>;
+    }
+    return <span className="text-slate-800 dark:text-slate-200">{String(val)}</span>;
   };
 
   return (
-    <div className="mt-3.5 rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden text-xs">
+    <div className="mt-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 overflow-hidden text-xs">
       {/* Top Bar with View Switcher */}
-      <div className="px-3 py-2 bg-slate-100/80 border-b border-slate-200 flex items-center justify-between gap-2">
+      <div className="px-3 py-2 bg-slate-100/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-            <Database size={13} className="text-indigo-600" />
+          <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
+            <Database size={13} className="text-indigo-600 dark:text-indigo-400" />
             <span>Snowflake Warehouse Records</span>
           </div>
-          <span className="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600 font-mono text-[10px]">
+          <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-mono text-[10px]">
             {data.length} {data.length === 1 ? "row" : "rows"}
           </span>
         </div>
@@ -422,8 +409,8 @@ function DataInspector({ data, onNavigateTab }) {
             onClick={() => setActiveTab("table")}
             className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
               activeTab === "table"
-                ? "bg-white text-indigo-700 shadow-2xs font-semibold border border-slate-200"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-semibold border border-slate-200 dark:border-slate-600"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
             <Table size={12} />
@@ -433,8 +420,8 @@ function DataInspector({ data, onNavigateTab }) {
             onClick={() => setActiveTab("json")}
             className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
               activeTab === "json"
-                ? "bg-white text-indigo-700 shadow-2xs font-semibold border border-slate-200"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-semibold border border-slate-200 dark:border-slate-600"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
             <Code2 size={12} />
@@ -448,23 +435,23 @@ function DataInspector({ data, onNavigateTab }) {
         <div>
           <div className="overflow-x-auto max-h-72 overflow-y-auto">
             <table className="w-full text-left border-collapse min-w-[400px]">
-              <thead className="bg-slate-100 text-slate-600 sticky top-0 border-b border-slate-200 shadow-2xs">
+              <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 border-b border-slate-200 dark:border-slate-700 shadow-2xs">
                 <tr>
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600"
+                      className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400"
                     >
                       {formatHeader(col)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150 bg-white">
+              <tbody className="divide-y divide-slate-150 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {displayRows.map((row, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-indigo-50/20 transition-colors">
+                  <tr key={rIdx} className="hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20 transition-colors">
                     {columns.map((col) => (
-                      <td key={col} className="px-3 py-2 text-slate-700 text-xs">
+                      <td key={col} className="px-3 py-2 text-slate-700 dark:text-slate-300 text-xs">
                         {formatCellValue(col, row[col])}
                       </td>
                     ))}
@@ -475,11 +462,11 @@ function DataInspector({ data, onNavigateTab }) {
           </div>
 
           {/* Footer with Expand and Shortcut */}
-          <div className="px-3 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px]">
+          <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px]">
             {data.length > 5 ? (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 cursor-pointer"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer"
               >
                 {expanded ? (
                   <>
@@ -494,13 +481,13 @@ function DataInspector({ data, onNavigateTab }) {
                 )}
               </button>
             ) : (
-              <span className="text-slate-400">All rows displayed</span>
+              <span className="text-slate-400 dark:text-slate-500">All rows displayed</span>
             )}
 
             {relevantTab && onNavigateTab && (
               <button
                 onClick={() => onNavigateTab(relevantTab.id)}
-                className="text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 cursor-pointer hover:underline"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer hover:underline"
               >
                 <span>Open {relevantTab.name} Mart</span>
                 <ExternalLink size={11} />
@@ -510,7 +497,7 @@ function DataInspector({ data, onNavigateTab }) {
         </div>
       ) : (
         <div className="relative">
-          <div className="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-64 overflow-y-auto">
+          <div className="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-64 overflow-y-auto border-t border-slate-800">
             <pre>{JSON.stringify(data, null, 2)}</pre>
           </div>
           <button
@@ -573,10 +560,10 @@ function EmptyState({ onSelectPrompt }) {
   ];
 
   const accents = {
-    indigo: "border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50/40 text-indigo-600 bg-indigo-50",
-    emerald: "border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50/40 text-emerald-600 bg-emerald-50",
-    rose: "border-rose-100 hover:border-rose-300 hover:bg-rose-50/40 text-rose-600 bg-rose-50",
-    amber: "border-amber-100 hover:border-amber-300 hover:bg-amber-50/40 text-amber-600 bg-amber-50",
+    indigo: "border-indigo-100 dark:border-indigo-900/40 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20",
+    emerald: "border-emerald-100 dark:border-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20",
+    rose: "border-rose-100 dark:border-rose-900/40 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/20",
+    amber: "border-amber-100 dark:border-amber-900/40 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20",
   };
 
   return (
@@ -588,15 +575,15 @@ function EmptyState({ onSelectPrompt }) {
         </div>
         <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white" />
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-900" />
         </span>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mb-1.5">
+      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-1.5">
         How can I help with your ERP data?
       </h2>
-      <p className="text-xs sm:text-sm text-slate-500 max-w-md mb-8">
-        Ask natural language questions across Snowflake data marts. Powered by Gemini 2.5 and live data synthesis.
+      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mb-8">
+        Ask natural language questions across Snowflake data marts. Powered by Gemini 3.5 Flash and live data synthesis.
       </p>
 
       {/* Starter Prompts Grid */}
@@ -609,16 +596,16 @@ function EmptyState({ onSelectPrompt }) {
             <button
               key={idx}
               onClick={() => onSelectPrompt(item.prompt)}
-              className={`group p-3.5 rounded-xl border bg-white shadow-2xs hover:shadow-sm transition-all duration-150 cursor-pointer flex items-start gap-3 text-left ${accentStyle}`}
+              className={`group p-3.5 rounded-xl border bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm transition-all duration-150 cursor-pointer flex items-start gap-3 text-left ${accentStyle}`}
             >
-              <div className="p-2 rounded-lg bg-white border border-slate-200/80 shrink-0 group-hover:scale-105 transition-transform">
+              <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shrink-0 group-hover:scale-105 transition-transform">
                 <Icon size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {item.prompt}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                   {item.subtitle}
                 </div>
               </div>
@@ -705,12 +692,17 @@ export default function CopilotChat({
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       console.error("Copilot request error:", err);
+      let errorText = "Unable to reach the ERP Copilot service. Please ensure the analytics backend is active on port 8000.";
+      if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+        errorText = "The analytics query took longer than expected to process through Snowflake and AI. Please try again.";
+      } else if (err.response?.status === 500) {
+        errorText = "The analytics engine encountered an internal server error while querying Snowflake. Please check the backend logs.";
+      }
       const errorMessage = {
         id: Date.now() + 1,
         role: "assistant",
         isError: true,
-        answer:
-          "Unable to reach the ERP Copilot service. Please ensure the analytics backend is active on port 8000.",
+        answer: errorText,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -756,29 +748,29 @@ export default function CopilotChat({
 
   return (
     <div
-      className={`flex flex-col bg-white overflow-hidden ${
+      className={`flex flex-col bg-white dark:bg-[#0b101b] overflow-hidden ${
         isDrawer
           ? "h-full w-full"
-          : "h-[740px] rounded-2xl border border-slate-200/90 shadow-sm"
+          : "h-[740px] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm"
       }`}
     >
       {/* ================= HEADER ================= */}
-      <div className="px-4 py-3.5 border-b border-slate-200 bg-white flex items-center justify-between gap-3 shrink-0">
+      <div className="px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101b] flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-2xs">
             <Sparkles size={16} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
                 ERP Copilot
               </h2>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Snowflake Live
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Natural language intelligence for enterprise metrics
             </p>
           </div>
@@ -788,7 +780,7 @@ export default function CopilotChat({
           {messages.length > 0 && (
             <button
               onClick={handleClearChat}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Reset conversation"
             >
               <RotateCcw size={15} />
@@ -798,7 +790,7 @@ export default function CopilotChat({
           {isDrawer && (
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Close Copilot"
             >
               <X size={17} />
@@ -808,7 +800,7 @@ export default function CopilotChat({
       </div>
 
       {/* ================= CHAT HISTORY SCROLL AREA ================= */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 bg-slate-50/40">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 bg-slate-50/40 dark:bg-[#070b14]/50">
         {messages.length === 0 ? (
           <EmptyState onSelectPrompt={executeQuery} />
         ) : (
@@ -829,16 +821,16 @@ export default function CopilotChat({
                       <Sparkles size={14} />
                     </div>
 
-                    <div className="flex-1 min-w-0 bg-white border border-slate-200/90 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 shadow-2xs">
+                    <div className="flex-1 min-w-0 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 shadow-2xs">
                       {/* Sub-header */}
-                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-100">
-                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           <span>DataPilot Copilot</span>
-                          <span className="text-slate-300">•</span>
-                          <span className="text-[10px] font-normal text-slate-400">Gemini 2.5</span>
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">Gemini 3.5 Flash</span>
                         </div>
                         {msg.timestamp && (
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
                             {new Date(msg.timestamp).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -859,17 +851,17 @@ export default function CopilotChat({
                       )}
 
                       {/* Action Bar */}
-                      <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs">
+                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-400 dark:text-slate-500 text-xs">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleCopyMessage(msg.answer, msg.id || idx)}
-                            className="p-1 rounded hover:bg-slate-100 hover:text-slate-700 transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
                             title="Copy response"
                           >
                             {copiedId === (msg.id || idx) ? (
                               <>
                                 <Check size={12} className="text-emerald-500" />
-                                <span className="text-emerald-600 font-medium text-[10px]">
+                                <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[10px]">
                                   Copied
                                 </span>
                               </>
@@ -887,8 +879,8 @@ export default function CopilotChat({
                             onClick={() => handleToggleFeedback(msg.id || idx, "like")}
                             className={`p-1 rounded transition-colors cursor-pointer ${
                               likedMap[msg.id || idx] === "like"
-                                ? "text-indigo-600 bg-indigo-50"
-                                : "hover:bg-slate-100 hover:text-slate-700"
+                                ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
+                                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
                             }`}
                             title="Helpful"
                           >
@@ -898,8 +890,8 @@ export default function CopilotChat({
                             onClick={() => handleToggleFeedback(msg.id || idx, "dislike")}
                             className={`p-1 rounded transition-colors cursor-pointer ${
                               likedMap[msg.id || idx] === "dislike"
-                                ? "text-rose-600 bg-rose-50"
-                                : "hover:bg-slate-100 hover:text-slate-700"
+                                ? "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50"
+                                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
                             }`}
                             title="Not helpful"
                           >
@@ -919,13 +911,13 @@ export default function CopilotChat({
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 animate-pulse shadow-2xs">
                   <Sparkles size={14} />
                 </div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs flex items-center gap-3">
+                <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce [animation-delay:-0.3s]" />
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce [animation-delay:-0.15s]" />
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce" />
                   </div>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     Querying Snowflake warehouse & synthesizing insights...
                   </span>
                 </div>
@@ -937,11 +929,11 @@ export default function CopilotChat({
       </div>
 
       {/* ================= INPUT FOOTER AREA ================= */}
-      <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0 space-y-2.5">
+      <div className="p-3 sm:p-4 bg-white dark:bg-[#0b101b] border-t border-slate-200 dark:border-slate-800 shrink-0 space-y-2.5">
         {/* Quick follow-up chips when messages exist */}
         {messages.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 mr-1">
               Suggestions:
             </span>
             {quickChips.map((chip, idx) => (
@@ -949,7 +941,7 @@ export default function CopilotChat({
                 key={idx}
                 onClick={() => executeQuery(chip)}
                 disabled={loading}
-                className="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 border border-slate-200 text-[11px] text-slate-600 transition-colors cursor-pointer disabled:opacity-50"
+                className="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300 transition-colors cursor-pointer disabled:opacity-50"
               >
                 {chip}
               </button>
@@ -967,7 +959,7 @@ export default function CopilotChat({
             onKeyDown={handleKeyDown}
             disabled={loading}
             placeholder="Ask a question (e.g., Who are my top customers?)..."
-            className="w-full bg-slate-50 hover:bg-slate-50/80 focus:bg-white border border-slate-200 rounded-xl px-4 py-2.5 sm:py-3 pr-12 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="w-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 sm:py-3 pr-12 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all"
           />
 
           <button
@@ -976,7 +968,7 @@ export default function CopilotChat({
             className={`absolute right-1.5 sm:right-2 p-2 rounded-lg transition-all flex items-center justify-center ${
               question.trim() && !loading
                 ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs scale-100 hover:scale-105 active:scale-95 cursor-pointer"
-                : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
             }`}
             title="Send query (Enter)"
           >
@@ -989,13 +981,13 @@ export default function CopilotChat({
         </div>
 
         {/* Footnote */}
-        <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 px-1">
           <div className="flex items-center gap-1">
             <span>Direct Snowflake warehouse marts connection</span>
           </div>
           <div className="hidden sm:flex items-center gap-1">
             <span>Press</span>
-            <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-[9px] text-slate-600">
+            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[9px] text-slate-600 dark:text-slate-400">
               Enter ↵
             </kbd>
             <span>to send</span>
