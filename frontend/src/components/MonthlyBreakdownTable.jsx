@@ -17,25 +17,25 @@ export default function MonthlyBreakdownTable({ data = [], loading = false }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#0f172a] p-6 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs h-[300px] flex items-center justify-center animate-pulse">
+      <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl p-6 rounded-2xl border border-white/40 dark:border-white/[0.06] shadow-lg shadow-black/[0.03] h-[300px] flex items-center justify-center animate-pulse">
         <p className="text-xs text-slate-400 font-medium">Loading monthly records from Snowflake...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-5 flex flex-col transition-colors">
-      <div className="pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/[0.06] shadow-lg shadow-black/[0.03] p-5 flex flex-col transition-all duration-300">
+      <div className="pb-3 mb-3 border-b border-slate-200/30 dark:border-white/[0.06] flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
               Monthly Ledger Breakdown
             </h3>
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-100/50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/30 dark:border-white/10">
               {sortedRecords.length} Periods
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
             Detailed monthly billing and volume from Snowflake
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function MonthlyBreakdownTable({ data = [], loading = false }) {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-medium">
+            <tr className="text-slate-400 dark:text-slate-500 font-medium">
               <th className="pb-2.5 pl-1 font-medium">Billing Period</th>
               <th className="pb-2.5 font-medium text-center">Orders</th>
               <th className="pb-2.5 font-medium text-right">Avg / Order</th>
@@ -52,7 +52,7 @@ export default function MonthlyBreakdownTable({ data = [], loading = false }) {
               <th className="pb-2.5 font-medium text-right pr-1">Total Revenue</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
+          <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
             {sortedRecords.map((item, index) => {
               const rev = Number(item.REVENUE ?? item.TOTAL_REVENUE ?? 0);
               const orders = Number(item.TOTAL_ORDERS ?? item.ORDERS ?? 0);
@@ -62,7 +62,7 @@ export default function MonthlyBreakdownTable({ data = [], loading = false }) {
               const growth = nextRev && nextRev > 0 ? ((rev - nextRev) / nextRev) * 100 : null;
 
               return (
-                <tr key={item.REVENUE_MONTH || index} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={item.REVENUE_MONTH || index} className="hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-colors duration-200">
                   <td className="py-2.5 pl-1 font-medium text-slate-900 dark:text-slate-100">
                     {formatMonthLabel(item.REVENUE_MONTH || item.MONTH)}
                   </td>
@@ -83,7 +83,7 @@ export default function MonthlyBreakdownTable({ data = [], loading = false }) {
                         {Math.abs(growth).toFixed(1)}%
                       </span>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-600 font-mono">-</span>
+                      <span className="text-slate-400/50 dark:text-slate-600 font-mono">-</span>
                     )}
                   </td>
                   <td className="py-2.5 pr-1 text-right font-mono font-semibold text-slate-900 dark:text-slate-100">

@@ -159,7 +159,7 @@ export default function DashboardPage() {
   }, [customers]);
 
   return (
-    <div className="flex bg-[#f8fafc] dark:bg-[#070b14] min-h-screen text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-200">
+    <div className="flex bg-gradient-to-br from-slate-50 via-white to-violet-50/30 dark:from-[#0a0e1a] dark:via-[#0c1120] dark:to-[#0f0a20] min-h-screen text-slate-900 dark:text-slate-100 selection:bg-violet-500/30 selection:text-violet-900 dark:selection:text-white transition-colors duration-300">
       {/* Functional Minimalist Sidebar */}
       <Sidebar
         activeTab={activeTab}
@@ -187,14 +187,14 @@ export default function DashboardPage() {
 
         {/* Error notification if backend drops */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/20 backdrop-blur-xl border border-rose-200/40 dark:border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{error}</span>
             </div>
             <button
               onClick={() => loadDashboardData(true)}
-              className="px-3 py-1 rounded-lg bg-rose-600 text-white font-medium hover:bg-rose-700 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-rose-600/90 text-white font-medium hover:bg-rose-700 transition-all duration-200 cursor-pointer backdrop-blur-sm"
             >
               Retry
             </button>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
         {activeTab === "dashboard" && (
           <>
             {/* 4 Executive KPI Metric Cards */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-7">
               <KpiCard
                 title="Top Accounts Revenue"
                 value={formatCurrency(totalCustomerRevenue)}
@@ -261,12 +261,12 @@ export default function DashboardPage() {
             </section>
 
             {/* Monthly Revenue Analytical Chart */}
-            <section className="mb-6">
+            <section className="mb-7">
               <RevenueChart data={revenue} loading={loading} />
             </section>
 
             {/* Data Tables Grid: Top Customers & Inventory Health */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-7">
               <div className="h-full">
                 <TopCustomersTable customers={customers} loading={loading} />
               </div>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
             </section>
 
             {/* Overdue Invoices Table */}
-            <section className="mb-6">
+            <section className="mb-7">
               <OverdueInvoicesTable invoices={invoices} loading={loading} />
             </section>
           </>
@@ -285,8 +285,8 @@ export default function DashboardPage() {
 
         {/* ================= VIEW 2: MONTHLY REVENUE ================= */}
         {activeTab === "revenue" && (
-          <div className="space-y-6">
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-7">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <KpiCard
                 title="Cumulative Revenue"
                 value={formatCurrency(totalAllRevenue)}
@@ -329,8 +329,8 @@ export default function DashboardPage() {
 
         {/* ================= VIEW 3: TOP CUSTOMERS ================= */}
         {activeTab === "customers" && (
-          <div className="space-y-6">
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-7">
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <KpiCard
                 title="Top Account Revenue"
                 value={formatCurrency(totalCustomerRevenue)}
@@ -365,8 +365,8 @@ export default function DashboardPage() {
 
         {/* ================= VIEW 4: INVENTORY HEALTH ================= */}
         {activeTab === "inventory" && (
-          <div className="space-y-6">
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-7">
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <KpiCard
                 title="Monitored SKUs"
                 value={inventory.length}
@@ -401,8 +401,8 @@ export default function DashboardPage() {
 
         {/* ================= VIEW 5: OVERDUE INVOICES ================= */}
         {activeTab === "invoices" && (
-          <div className="space-y-6">
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-7">
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <KpiCard
                 title="Outstanding Debt"
                 value={formatCurrency(totalOverdueAmount)}
@@ -437,9 +437,9 @@ export default function DashboardPage() {
 
         {/* ================= VIEW 6: AI COPILOT ================= */}
         {activeTab === "copilot" && (
-          <div className="space-y-6">
+          <div className="space-y-7">
             {/* 3 Domain Status Cards */}
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <KpiCard
                 title="AI Data Source"
                 value="Snowflake DW"
@@ -476,11 +476,11 @@ export default function DashboardPage() {
       {activeTab !== "copilot" && (
         <button
           onClick={() => setCopilotDrawerOpen(true)}
-          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm shadow-xl shadow-slate-900/20 dark:shadow-indigo-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-slate-700/60 dark:border-indigo-400/30"
+          className="fixed bottom-6 right-6 z-40 group flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-full bg-slate-900/80 hover:bg-slate-800/90 dark:bg-violet-600/80 dark:hover:bg-violet-500/90 backdrop-blur-xl text-white font-medium text-xs sm:text-sm shadow-xl shadow-black/10 dark:shadow-violet-500/20 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer border border-white/10"
           title="Open ERP AI Copilot"
         >
           <div className="relative flex items-center">
-            <Sparkles size={16} className="text-indigo-400 dark:text-white" />
+            <Sparkles size={16} className="text-violet-400 dark:text-white" />
             <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           </div>
           <span className="font-semibold tracking-tight">Ask Copilot</span>
@@ -492,12 +492,12 @@ export default function DashboardPage() {
         <div className="fixed inset-0 z-50 flex justify-end">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/30 backdrop-blur-md transition-opacity"
             onClick={() => setCopilotDrawerOpen(false)}
           />
 
           {/* Slide-out Panel */}
-          <div className="relative w-full max-w-lg md:max-w-xl bg-white dark:bg-[#0b101b] border-l border-slate-200 dark:border-slate-800 shadow-2xl h-full flex flex-col z-50 p-0 overflow-hidden">
+          <div className="relative w-full max-w-lg md:max-w-xl bg-white/80 dark:bg-[#0b101b]/90 backdrop-blur-2xl border-l border-white/20 dark:border-white/[0.06] shadow-2xl h-full flex flex-col z-50 p-0 overflow-hidden">
             <CopilotChat
               variant="drawer"
               onClose={() => setCopilotDrawerOpen(false)}

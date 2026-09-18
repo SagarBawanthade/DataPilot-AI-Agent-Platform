@@ -66,7 +66,7 @@ function renderInlineText(text) {
       tokens.push(
         <code
           key={keyIdx++}
-          className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 font-mono text-xs border border-slate-200/80 dark:border-slate-700"
+          className="px-1.5 py-0.5 rounded-md bg-white/50 dark:bg-white/5 text-violet-700 dark:text-violet-300 font-mono text-xs border border-white/30 dark:border-white/10"
         >
           {matchedStr.slice(1, -1)}
         </code>
@@ -220,7 +220,7 @@ function MarkdownMessage({ content }) {
     <div className="text-slate-800 dark:text-slate-200 space-y-2.5 text-xs sm:text-sm leading-relaxed">
       {blocks.map((block, idx) => {
         if (block.type === "hr") {
-          return <hr key={idx} className="my-3.5 border-t border-slate-200/80 dark:border-slate-800" />;
+          return <hr key={idx} className="my-3.5 border-t border-slate-200/30 dark:border-white/[0.06]" />;
         }
 
         if (block.type === "heading") {
@@ -233,13 +233,13 @@ function MarkdownMessage({ content }) {
           }
           if (block.level === 2) {
             return (
-              <h2 key={idx} className="text-sm sm:text-base font-bold text-slate-900 dark:text-indigo-300 mt-3.5 mb-1">
+              <h2 key={idx} className="text-sm sm:text-base font-bold text-slate-900 dark:text-violet-300 mt-3.5 mb-1">
                 {renderInlineText(block.text)}
               </h2>
             );
           }
           return (
-            <h3 key={idx} className="text-xs sm:text-sm font-bold text-slate-900 dark:text-indigo-400 mt-3 mb-1 tracking-tight">
+            <h3 key={idx} className="text-xs sm:text-sm font-bold text-slate-900 dark:text-violet-400 mt-3 mb-1 tracking-tight">
               {renderInlineText(block.text)}
             </h3>
           );
@@ -247,10 +247,10 @@ function MarkdownMessage({ content }) {
 
         if (block.type === "table") {
           return (
-            <div key={idx} className="my-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs bg-white dark:bg-slate-900">
+            <div key={idx} className="my-3 overflow-x-auto rounded-xl border border-white/30 dark:border-white/[0.06] shadow-sm bg-white/50 dark:bg-white/[0.03] backdrop-blur-sm">
               <table className="w-full text-xs text-left border-collapse min-w-[340px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800">
+                  <tr className="bg-white/40 dark:bg-white/[0.04] border-b border-white/20 dark:border-white/[0.06]">
                     {block.headers.map((h, hIdx) => (
                       <th
                         key={hIdx}
@@ -261,9 +261,9 @@ function MarkdownMessage({ content }) {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-white/10 dark:divide-white/[0.04]">
                   {block.rows.map((row, rIdx) => (
-                    <tr key={rIdx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr key={rIdx} className="hover:bg-violet-50/20 dark:hover:bg-violet-500/5 transition-colors">
                       {row.map((cell, cIdx) => (
                         <td key={cIdx} className="px-3 py-2 text-slate-700 dark:text-slate-300 font-mono text-[11px] sm:text-xs">
                           {renderInlineText(cell)}
@@ -281,7 +281,7 @@ function MarkdownMessage({ content }) {
           return (
             <pre
               key={idx}
-              className="my-2 p-3 bg-slate-900 dark:bg-slate-950 text-slate-200 rounded-xl text-xs font-mono overflow-x-auto border border-slate-800"
+              className="my-2 p-3 bg-slate-900/95 dark:bg-slate-950/90 backdrop-blur-xl text-slate-200 rounded-xl text-xs font-mono overflow-x-auto border border-white/10"
             >
               <code>{block.content}</code>
             </pre>
@@ -298,11 +298,11 @@ function MarkdownMessage({ content }) {
                   style={{ marginLeft: `${Math.min(item.indent * 8, 24)}px` }}
                 >
                   {item.isNumber ? (
-                    <span className="font-semibold text-indigo-600 dark:text-indigo-400 text-xs w-4 shrink-0">
+                    <span className="font-semibold text-violet-600 dark:text-violet-400 text-xs w-4 shrink-0">
                       {item.bullet}
                     </span>
                   ) : (
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-400 mt-1.5 shrink-0" />
                   )}
                   <div className="flex-1">{renderInlineText(item.text)}</div>
                 </div>
@@ -391,15 +391,15 @@ function DataInspector({ data, onNavigateTab }) {
   };
 
   return (
-    <div className="mt-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 overflow-hidden text-xs">
+    <div className="mt-3.5 rounded-xl border border-white/30 dark:border-white/[0.06] bg-white/30 dark:bg-white/[0.03] backdrop-blur-sm overflow-hidden text-xs">
       {/* Top Bar with View Switcher */}
-      <div className="px-3 py-2 bg-slate-100/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+      <div className="px-3 py-2 bg-white/40 dark:bg-white/[0.04] border-b border-white/20 dark:border-white/[0.06] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-            <Database size={13} className="text-indigo-600 dark:text-indigo-400" />
+            <Database size={13} className="text-violet-600 dark:text-violet-400" />
             <span>Snowflake Warehouse Records</span>
           </div>
-          <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-mono text-[10px]">
+          <span className="px-1.5 py-0.5 rounded-md bg-white/50 dark:bg-white/5 border border-white/30 dark:border-white/10 text-slate-500 dark:text-slate-400 font-mono text-[10px]">
             {data.length} {data.length === 1 ? "row" : "rows"}
           </span>
         </div>
@@ -407,9 +407,9 @@ function DataInspector({ data, onNavigateTab }) {
         <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab("table")}
-            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 flex items-center gap-1 cursor-pointer ${
               activeTab === "table"
-                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-semibold border border-slate-200 dark:border-slate-600"
+                ? "bg-white/60 dark:bg-white/10 text-violet-700 dark:text-violet-300 shadow-sm shadow-black/5 font-semibold border border-white/40 dark:border-white/10"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
@@ -418,9 +418,9 @@ function DataInspector({ data, onNavigateTab }) {
           </button>
           <button
             onClick={() => setActiveTab("json")}
-            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+            className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 flex items-center gap-1 cursor-pointer ${
               activeTab === "json"
-                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-2xs font-semibold border border-slate-200 dark:border-slate-600"
+                ? "bg-white/60 dark:bg-white/10 text-violet-700 dark:text-violet-300 shadow-sm shadow-black/5 font-semibold border border-white/40 dark:border-white/10"
                 : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
@@ -435,21 +435,21 @@ function DataInspector({ data, onNavigateTab }) {
         <div>
           <div className="overflow-x-auto max-h-72 overflow-y-auto">
             <table className="w-full text-left border-collapse min-w-[400px]">
-              <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 sticky top-0 border-b border-slate-200 dark:border-slate-700 shadow-2xs">
+              <thead className="bg-white/30 dark:bg-white/[0.03] text-slate-600 dark:text-slate-300 sticky top-0 border-b border-white/20 dark:border-white/[0.06]">
                 <tr>
                   {columns.map((col) => (
                     <th
                       key={col}
-                      className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400"
+                      className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                     >
                       {formatHeader(col)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150 dark:divide-slate-800 bg-white dark:bg-slate-900">
+              <tbody className="divide-y divide-white/10 dark:divide-white/[0.04] bg-white/20 dark:bg-white/[0.02]">
                 {displayRows.map((row, rIdx) => (
-                  <tr key={rIdx} className="hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20 transition-colors">
+                  <tr key={rIdx} className="hover:bg-violet-50/20 dark:hover:bg-violet-500/5 transition-colors">
                     {columns.map((col) => (
                       <td key={col} className="px-3 py-2 text-slate-700 dark:text-slate-300 text-xs">
                         {formatCellValue(col, row[col])}
@@ -462,11 +462,11 @@ function DataInspector({ data, onNavigateTab }) {
           </div>
 
           {/* Footer with Expand and Shortcut */}
-          <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px]">
+          <div className="px-3 py-2 bg-white/30 dark:bg-white/[0.03] border-t border-white/20 dark:border-white/[0.06] flex items-center justify-between text-[11px]">
             {data.length > 5 ? (
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer"
+                className="text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300 font-medium flex items-center gap-1 cursor-pointer"
               >
                 {expanded ? (
                   <>
@@ -487,7 +487,7 @@ function DataInspector({ data, onNavigateTab }) {
             {relevantTab && onNavigateTab && (
               <button
                 onClick={() => onNavigateTab(relevantTab.id)}
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer hover:underline"
+                className="text-violet-600 dark:text-violet-400 hover:text-violet-800 dark:hover:text-violet-300 font-medium flex items-center gap-1 cursor-pointer hover:underline"
               >
                 <span>Open {relevantTab.name} Mart</span>
                 <ExternalLink size={11} />
@@ -497,12 +497,12 @@ function DataInspector({ data, onNavigateTab }) {
         </div>
       ) : (
         <div className="relative">
-          <div className="p-3 bg-slate-950 text-slate-200 font-mono text-[11px] overflow-x-auto max-h-64 overflow-y-auto border-t border-slate-800">
+          <div className="p-3 bg-slate-950/95 backdrop-blur-xl text-slate-200 font-mono text-[11px] overflow-x-auto max-h-64 overflow-y-auto border-t border-white/5">
             <pre>{JSON.stringify(data, null, 2)}</pre>
           </div>
           <button
             onClick={handleCopyJson}
-            className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer flex items-center gap-1 text-[10px]"
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm text-slate-300 transition-all duration-200 cursor-pointer flex items-center gap-1 text-[10px]"
             title="Copy JSON"
           >
             {copied ? (
@@ -534,7 +534,7 @@ function EmptyState({ onSelectPrompt }) {
       prompt: "Who are my top customers?",
       subtitle: "Ranked by total revenue and order volume",
       icon: Users,
-      accent: "indigo",
+      accent: "violet",
     },
     {
       title: "Monthly Revenue",
@@ -560,17 +560,17 @@ function EmptyState({ onSelectPrompt }) {
   ];
 
   const accents = {
-    indigo: "border-indigo-100 dark:border-indigo-900/40 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20",
-    emerald: "border-emerald-100 dark:border-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20",
-    rose: "border-rose-100 dark:border-rose-900/40 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-rose-50/40 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/20",
-    amber: "border-amber-100 dark:border-amber-900/40 hover:border-amber-300 dark:hover:border-amber-700 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20",
+    violet: "border-violet-200/30 dark:border-violet-500/15 hover:border-violet-300/50 dark:hover:border-violet-500/30 hover:bg-violet-50/30 dark:hover:bg-violet-500/5 text-violet-600 dark:text-violet-400",
+    emerald: "border-emerald-200/30 dark:border-emerald-500/15 hover:border-emerald-300/50 dark:hover:border-emerald-500/30 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 text-emerald-600 dark:text-emerald-400",
+    rose: "border-rose-200/30 dark:border-rose-500/15 hover:border-rose-300/50 dark:hover:border-rose-500/30 hover:bg-rose-50/30 dark:hover:bg-rose-500/5 text-rose-600 dark:text-rose-400",
+    amber: "border-amber-200/30 dark:border-amber-500/15 hover:border-amber-300/50 dark:hover:border-amber-500/30 hover:bg-amber-50/30 dark:hover:bg-amber-500/5 text-amber-600 dark:text-amber-400",
   };
 
   return (
     <div className="h-full flex flex-col items-center justify-center py-8 px-4 text-center select-none">
       {/* Glowing AI Icon */}
       <div className="relative mb-4">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-violet-600 via-violet-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/25">
           <Sparkles size={28} className="animate-pulse" />
         </div>
         <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
@@ -579,10 +579,10 @@ function EmptyState({ onSelectPrompt }) {
         </span>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white mb-1.5">
+      <h2 className="text-xl sm:text-2xl font-bold tracking-[-0.03em] text-slate-900 dark:text-white mb-1.5">
         How can I help with your ERP data?
       </h2>
-      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mb-8">
+      <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 max-w-md mb-8">
         Ask natural language questions across Snowflake data marts. Powered by Gemini 3.5 Flash and live data synthesis.
       </p>
 
@@ -596,16 +596,16 @@ function EmptyState({ onSelectPrompt }) {
             <button
               key={idx}
               onClick={() => onSelectPrompt(item.prompt)}
-              className={`group p-3.5 rounded-xl border bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm transition-all duration-150 cursor-pointer flex items-start gap-3 text-left ${accentStyle}`}
+              className={`group p-3.5 rounded-xl border bg-white/50 dark:bg-white/[0.03] backdrop-blur-sm shadow-sm shadow-black/[0.03] hover:shadow-md transition-all duration-300 cursor-pointer flex items-start gap-3 text-left ${accentStyle}`}
             >
-              <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shrink-0 group-hover:scale-105 transition-transform">
+              <div className="p-2 rounded-xl bg-white/60 dark:bg-white/5 border border-white/30 dark:border-white/10 shrink-0 group-hover:scale-105 transition-transform duration-200">
                 <Icon size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
                   {item.prompt}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
                   {item.subtitle}
                 </div>
               </div>
@@ -748,16 +748,16 @@ export default function CopilotChat({
 
   return (
     <div
-      className={`flex flex-col bg-white dark:bg-[#0b101b] overflow-hidden ${
+      className={`flex flex-col bg-white/70 dark:bg-[#0b101b]/80 backdrop-blur-xl overflow-hidden ${
         isDrawer
           ? "h-full w-full"
-          : "h-[740px] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm"
+          : "h-[740px] rounded-2xl border border-white/30 dark:border-white/[0.06] shadow-xl shadow-black/5"
       }`}
     >
       {/* ================= HEADER ================= */}
-      <div className="px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b101b] flex items-center justify-between gap-3 shrink-0">
+      <div className="px-4 py-3.5 border-b border-white/20 dark:border-white/[0.06] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-2xs">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
             <Sparkles size={16} />
           </div>
           <div>
@@ -765,12 +765,12 @@ export default function CopilotChat({
               <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
                 ERP Copilot
               </h2>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-300/20 dark:border-emerald-500/15">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Snowflake Live
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
               Natural language intelligence for enterprise metrics
             </p>
           </div>
@@ -780,7 +780,7 @@ export default function CopilotChat({
           {messages.length > 0 && (
             <button
               onClick={handleClearChat}
-              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer"
               title="Reset conversation"
             >
               <RotateCcw size={15} />
@@ -790,7 +790,7 @@ export default function CopilotChat({
           {isDrawer && (
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-white/5 transition-all duration-200 cursor-pointer"
               title="Close Copilot"
             >
               <X size={17} />
@@ -800,7 +800,7 @@ export default function CopilotChat({
       </div>
 
       {/* ================= CHAT HISTORY SCROLL AREA ================= */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 bg-slate-50/40 dark:bg-[#070b14]/50">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5 bg-slate-50/30 dark:bg-[#070b14]/30">
         {messages.length === 0 ? (
           <EmptyState onSelectPrompt={executeQuery} />
         ) : (
@@ -810,23 +810,23 @@ export default function CopilotChat({
                 {msg.role === "user" ? (
                   // User Message
                   <div className="flex justify-end">
-                    <div className="max-w-[85%] sm:max-w-lg bg-indigo-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-xs shadow-2xs text-xs sm:text-sm leading-relaxed">
+                    <div className="max-w-[85%] sm:max-w-lg bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-xs shadow-lg shadow-violet-500/20 text-xs sm:text-sm leading-relaxed">
                       {msg.content}
                     </div>
                   </div>
                 ) : (
                   // Assistant Message
                   <div className="flex items-start gap-2.5 max-w-full">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-2xs">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-violet-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-lg shadow-violet-500/15">
                       <Sparkles size={14} />
                     </div>
 
-                    <div className="flex-1 min-w-0 bg-white dark:bg-[#0f172a] border border-slate-200/90 dark:border-slate-800 rounded-2xl rounded-tl-xs p-3.5 sm:p-4 shadow-2xs">
+                    <div className="flex-1 min-w-0 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/30 dark:border-white/[0.06] rounded-2xl rounded-tl-xs p-3.5 sm:p-4 shadow-sm shadow-black/[0.03]">
                       {/* Sub-header */}
-                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/30 dark:border-white/[0.06]">
                         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                           <span>DataPilot Copilot</span>
-                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span className="text-slate-300/50 dark:text-slate-600">•</span>
                           <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">Gemini 3.5 Flash</span>
                         </div>
                         {msg.timestamp && (
@@ -851,11 +851,11 @@ export default function CopilotChat({
                       )}
 
                       {/* Action Bar */}
-                      <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-400 dark:text-slate-500 text-xs">
+                      <div className="mt-3 pt-2 border-t border-slate-200/20 dark:border-white/[0.04] flex items-center justify-between text-slate-400 dark:text-slate-500 text-xs">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleCopyMessage(msg.answer, msg.id || idx)}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-1 text-[11px] cursor-pointer"
+                            className="p-1 rounded-lg hover:bg-white/40 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 flex items-center gap-1 text-[11px] cursor-pointer"
                             title="Copy response"
                           >
                             {copiedId === (msg.id || idx) ? (
@@ -877,10 +877,10 @@ export default function CopilotChat({
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleToggleFeedback(msg.id || idx, "like")}
-                            className={`p-1 rounded transition-colors cursor-pointer ${
+                            className={`p-1 rounded-lg transition-all duration-200 cursor-pointer ${
                               likedMap[msg.id || idx] === "like"
-                                ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50"
-                                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                                ? "text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-500/10"
+                                : "hover:bg-white/40 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-300"
                             }`}
                             title="Helpful"
                           >
@@ -888,10 +888,10 @@ export default function CopilotChat({
                           </button>
                           <button
                             onClick={() => handleToggleFeedback(msg.id || idx, "dislike")}
-                            className={`p-1 rounded transition-colors cursor-pointer ${
+                            className={`p-1 rounded-lg transition-all duration-200 cursor-pointer ${
                               likedMap[msg.id || idx] === "dislike"
-                                ? "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50"
-                                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                                ? "text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/10"
+                                : "hover:bg-white/40 dark:hover:bg-white/5 hover:text-slate-700 dark:hover:text-slate-300"
                             }`}
                             title="Not helpful"
                           >
@@ -908,16 +908,16 @@ export default function CopilotChat({
             {/* Loading Indicator */}
             {loading && (
               <div className="flex items-start gap-2.5 max-w-full">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 animate-pulse shadow-2xs">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-violet-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-0.5 animate-pulse shadow-lg shadow-violet-500/15">
                   <Sparkles size={14} />
                 </div>
-                <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-xs p-3.5 shadow-2xs flex items-center gap-3">
+                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/30 dark:border-white/[0.06] rounded-2xl rounded-tl-xs p-3.5 shadow-sm shadow-black/[0.03] flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce [animation-delay:-0.3s]" />
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce [animation-delay:-0.15s]" />
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-bounce" />
+                    <span className="w-2 h-2 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-2 h-2 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-2 h-2 rounded-full bg-violet-600 dark:bg-violet-400 animate-bounce" />
                   </div>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                     Querying Snowflake warehouse & synthesizing insights...
                   </span>
                 </div>
@@ -929,11 +929,11 @@ export default function CopilotChat({
       </div>
 
       {/* ================= INPUT FOOTER AREA ================= */}
-      <div className="p-3 sm:p-4 bg-white dark:bg-[#0b101b] border-t border-slate-200 dark:border-slate-800 shrink-0 space-y-2.5">
+      <div className="p-3 sm:p-4 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-t border-white/20 dark:border-white/[0.06] shrink-0 space-y-2.5">
         {/* Quick follow-up chips when messages exist */}
         {messages.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider shrink-0 mr-1">
+            <span className="text-[10px] font-semibold text-slate-400/70 dark:text-slate-500/70 uppercase tracking-wider shrink-0 mr-1">
               Suggestions:
             </span>
             {quickChips.map((chip, idx) => (
@@ -941,7 +941,7 @@ export default function CopilotChat({
                 key={idx}
                 onClick={() => executeQuery(chip)}
                 disabled={loading}
-                className="shrink-0 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300 transition-colors cursor-pointer disabled:opacity-50"
+                className="shrink-0 px-2.5 py-1 rounded-full bg-white/50 dark:bg-white/5 hover:bg-violet-50/40 dark:hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200/40 dark:hover:border-violet-500/20 border border-white/30 dark:border-white/10 text-[11px] text-slate-600 dark:text-slate-300 transition-all duration-200 cursor-pointer disabled:opacity-50 backdrop-blur-sm"
               >
                 {chip}
               </button>
@@ -959,21 +959,21 @@ export default function CopilotChat({
             onKeyDown={handleKeyDown}
             disabled={loading}
             placeholder="Ask a question (e.g., Who are my top customers?)..."
-            className="w-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-50/80 dark:hover:bg-slate-800/80 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 sm:py-3 pr-12 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all"
+            className="w-full bg-white/50 dark:bg-white/5 hover:bg-white/60 dark:hover:bg-white/[0.07] focus:bg-white/80 dark:focus:bg-white/[0.08] backdrop-blur-sm border border-white/40 dark:border-white/10 rounded-xl px-4 py-2.5 sm:py-3 pr-12 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400/60 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-violet-500/15 dark:focus:ring-violet-500/20 focus:border-violet-400/60 dark:focus:border-violet-400/40 transition-all duration-200"
           />
 
           <button
             onClick={() => executeQuery()}
             disabled={!question.trim() || loading}
-            className={`absolute right-1.5 sm:right-2 p-2 rounded-lg transition-all flex items-center justify-center ${
+            className={`absolute right-1.5 sm:right-2 p-2 rounded-lg transition-all duration-200 flex items-center justify-center ${
               question.trim() && !loading
-                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs scale-100 hover:scale-105 active:scale-95 cursor-pointer"
-                : "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-500/20 scale-100 hover:scale-105 active:scale-95 cursor-pointer"
+                : "bg-white/30 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed"
             }`}
             title="Send query (Enter)"
           >
             {loading ? (
-              <Loader2 size={15} className="animate-spin text-slate-500" />
+              <Loader2 size={15} className="animate-spin text-slate-400" />
             ) : (
               <ArrowUp size={15} strokeWidth={2.5} />
             )}
@@ -981,13 +981,13 @@ export default function CopilotChat({
         </div>
 
         {/* Footnote */}
-        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 px-1">
+        <div className="flex items-center justify-between text-[10px] text-slate-400/60 dark:text-slate-500/60 px-1">
           <div className="flex items-center gap-1">
             <span>Direct Snowflake warehouse marts connection</span>
           </div>
           <div className="hidden sm:flex items-center gap-1">
             <span>Press</span>
-            <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[9px] text-slate-600 dark:text-slate-400">
+            <kbd className="px-1 py-0.5 rounded bg-white/40 dark:bg-white/5 border border-white/30 dark:border-white/10 font-mono text-[9px] text-slate-500 dark:text-slate-400">
               Enter ↵
             </kbd>
             <span>to send</span>

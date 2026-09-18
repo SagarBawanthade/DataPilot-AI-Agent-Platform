@@ -23,26 +23,26 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-[#0f172a] p-6 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs h-[380px] flex items-center justify-center animate-pulse">
+      <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl p-6 rounded-2xl border border-white/40 dark:border-white/[0.06] shadow-lg shadow-black/[0.03] h-[380px] flex items-center justify-center animate-pulse">
         <p className="text-xs text-slate-400 font-medium">Loading overdue invoices...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs p-5 flex flex-col h-full transition-colors">
+    <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/[0.06] shadow-lg shadow-black/[0.03] p-5 flex flex-col h-full transition-all duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-200/30 dark:border-white/[0.06]">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
               Overdue Invoices
             </h2>
-            <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-300/20 dark:border-rose-500/15">
               {invoices.length} Overdue
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
             Aging receivables exceeding scheduled due dates
           </p>
         </div>
@@ -51,14 +51,14 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
         <div className="relative">
           <Search
             size={13}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400/70"
           />
           <input
             type="text"
             placeholder="Filter invoice/client..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-32 sm:w-44 pl-7 pr-2.5 py-1 text-xs bg-slate-50 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors placeholder:text-slate-400 text-slate-900 dark:text-slate-100"
+            className="w-32 sm:w-44 pl-7 pr-2.5 py-1.5 text-xs bg-white/50 dark:bg-white/5 rounded-xl border border-white/40 dark:border-white/10 focus:outline-none focus:border-violet-400/60 dark:focus:border-violet-400/40 focus:ring-2 focus:ring-violet-500/10 transition-all duration-200 placeholder:text-slate-400/60 text-slate-900 dark:text-slate-100 backdrop-blur-sm"
           />
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
       <div className="overflow-x-auto flex-1">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-medium">
+            <tr className="text-slate-400 dark:text-slate-500 font-medium">
               <th className="pb-2.5 pl-1 font-medium">Invoice ID</th>
               <th className="pb-2.5 font-medium">Customer ID</th>
               <th className="pb-2.5 font-medium text-center">Due Date</th>
@@ -75,7 +75,7 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
               <th className="pb-2.5 font-medium text-right pr-1">Amount</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70">
+          <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.04]">
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-slate-400 dark:text-slate-500">
@@ -90,7 +90,7 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
                 return (
                   <tr
                     key={inv.INVOICE_ID}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
+                    className="hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-colors duration-200"
                   >
                     <td className="py-2.5 pl-1 font-mono font-medium text-slate-900 dark:text-slate-100">
                       INV-{String(inv.INVOICE_ID).padStart(4, "0")}
@@ -106,7 +106,7 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
                       {formatFullDate(inv.DUE_DATE)}
                     </td>
                     <td className="py-2.5 text-center font-mono">
-                      <span className="inline-block px-1.5 py-0.2 rounded text-[10.5px] font-medium bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60">
+                      <span className="inline-block px-1.5 py-0.5 rounded-lg text-[10.5px] font-medium bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-300/20 dark:border-rose-500/15">
                         {days > 0 ? `${days}d past due` : "Due today"}
                       </span>
                     </td>
@@ -122,7 +122,7 @@ export default function OverdueInvoicesTable({ invoices = [], loading = false })
       </div>
 
       {/* Footer */}
-      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+      <div className="mt-3 pt-3 border-t border-slate-200/30 dark:border-white/[0.06] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <span>Total Uncollected Receivables:</span>
         <span className="font-bold text-rose-600 dark:text-rose-400 font-mono text-sm">
           {formatCurrency(totalOverdue)}
